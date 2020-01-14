@@ -1,11 +1,20 @@
-{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE GADTs              #-}
+{-# LANGUAGE RankNTypes         #-}
 {-# LANGUAGE StandaloneDeriving #-}
-{-# LANGUAGE GADTs #-}
-module Tensor.Elt where
+module Tensor.Elt
+  ( Elt (..)
+  , withRandomElt
+  , maybeFloatingElt
+  , Some (..)
+  ) where
 
+import Data.GADT.Compare
+import Data.GADT.Show
 import Data.Int
+import Data.Some
+import Data.Type.Equality
 import Data.Word
-import System.Random             (Random)
+import System.Random      (Random)
 
 data Elt a where
   EltFloat :: Elt Float
@@ -17,37 +26,29 @@ data Elt a where
 deriving instance Eq (Elt a)
 deriving instance Show (Elt a)
 
-data SomeElt where
-  SomeElt :: Elt a -> SomeElt
+instance TestEquality Elt where
+  testEquality EltFloat  EltFloat  = Just Refl
+  testEquality EltInt32  EltInt32  = Just Refl
+  testEquality EltInt64  EltInt64  = Just Refl
+  testEquality EltWord32 EltWord32 = Just Refl
+  testEquality EltWord64 EltWord64 = Just Refl
+  testEquality _         _         = Nothing
 
-instance Show SomeElt where
-  show (SomeElt elt) = show elt
+-- | This gives us Eq for Some Elt
+instance GEq Elt where geq = testEquality
 
-instance Eq SomeElt where
-  a == b = maybeEqElt (\_ _ -> True) False a b
-
-maybeEqElt :: (forall x. Elt x -> Elt x -> r) -> r -> SomeElt -> SomeElt -> r
-maybeEqElt f _ (SomeElt a@EltFloat) (SomeElt b@EltFloat) = f a b
-maybeEqElt _ z (SomeElt EltFloat) _ = z
-maybeEqElt f _ (SomeElt a@EltInt32) (SomeElt b@EltInt32) = f a b
-maybeEqElt _ z (SomeElt EltInt32) _ = z
-maybeEqElt f _ (SomeElt a@EltInt64) (SomeElt b@EltInt64) = f a b
-maybeEqElt _ z (SomeElt EltInt64) _ = z
-maybeEqElt f _ (SomeElt a@EltWord32) (SomeElt b@EltWord32) = f a b
-maybeEqElt _ z (SomeElt EltWord32) _ = z
-maybeEqElt f _ (SomeElt a@EltWord64) (SomeElt b@EltWord64) = f a b
-maybeEqElt _ z (SomeElt EltWord64) _ = z
+instance GShow Elt where gshowsPrec = showsPrec
 
 withRandomElt :: Elt a -> (Random a => r) -> r
-withRandomElt EltFloat = id
-withRandomElt EltInt32 = id
+withRandomElt EltFloat  = id
+withRandomElt EltInt32  = id
 withRandomElt EltWord32 = id
-withRandomElt EltInt64 = id
+withRandomElt EltInt64  = id
 withRandomElt EltWord64 = id
 
 maybeFloatingElt :: Elt a -> r -> (Floating a => r) -> r
-maybeFloatingElt EltFloat _ r = r
-maybeFloatingElt EltInt32 z _ = z
+maybeFloatingElt EltFloat _ r  = r
+maybeFloatingElt EltInt32 z _  = z
 maybeFloatingElt EltWord32 z _ = z
-maybeFloatingElt EltInt64 z _ = z
+maybeFloatingElt EltInt64 z _  = z
 maybeFloatingElt EltWord64 z _ = z

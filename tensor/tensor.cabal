@@ -24,6 +24,7 @@ library
   build-depends:
       base
     , random
+    , some
   ghc-options:
     -Wall
     -Wno-name-shadowing
