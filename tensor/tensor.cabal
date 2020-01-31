@@ -17,6 +17,7 @@ library
     Tensor.Tensor
     Tensor.Elt
     Tensor.Shape
+    Data.Positive
   default-language:
     Haskell2010
   hs-source-dirs:
@@ -25,6 +26,7 @@ library
       base
     , random
     , some
+    , aeson
   ghc-options:
     -Wall
     -Wno-name-shadowing
