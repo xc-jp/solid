@@ -6,7 +6,10 @@ import Data.Ratio
 import GHC.Natural
 
 newtype Positive = Positive Natural
-  deriving (Show, Eq, Ord)
+  deriving (Eq, Ord)
+
+instance Show Positive where
+  showsPrec d (Positive n) = showsPrec d n
 
 instance FromJSON Positive where
   parseJSON v = do
