@@ -1,15 +1,22 @@
+{-# LANGUAGE DeriveDataTypeable #-}
 module Data.Positive where
 
 import Control.Exception
 import Data.Aeson
+import Data.Binary
+import Data.Data
 import Data.Ratio
 import GHC.Natural
 
 newtype Positive = Positive Natural
-  deriving (Eq, Ord)
+  deriving (Eq, Ord, Data)
 
 instance Show Positive where
   showsPrec d (Positive n) = showsPrec d n
+
+instance Binary Positive where
+  put (Positive n) = put n
+  get = Positive <$> get
 
 instance FromJSON Positive where
   parseJSON v = do
