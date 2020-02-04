@@ -27,6 +27,7 @@ library
     , random
     , some
     , aeson
+    , binary
   ghc-options:
     -Wall
     -Wno-name-shadowing
