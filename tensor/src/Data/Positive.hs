@@ -49,3 +49,7 @@ instance Integral Positive where
   quotRem (Positive x) (Positive y) =
     let (q,r) = quotRem x y in (fromIntegral q, fromIntegral r)
   toInteger (Positive x) = toInteger x
+
+-- | Necessary because @(fromIntegral n) + p@ should be safe, but errors because of possible intermediate @Positive 0@.
+plusNat :: Natural -> Positive -> Positive
+plusNat n (Positive p) = Positive (n + p)
