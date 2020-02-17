@@ -7,8 +7,10 @@
 module Tensor.Elt
   ( Elt (..)
   , withRandomElt
+  , withNumElt
   , withShowElt
   , withEqElt
+  , withOrdElt
   , withBinaryElt
   , maybeFloatingElt
   , Some (..)
@@ -111,6 +113,18 @@ instance GEq Elt where geq = testEquality
 
 instance GShow Elt where gshowsPrec = showsPrec
 
+withNumElt :: Elt a -> (Num a => r) -> r
+withNumElt EltFloat  = id
+withNumElt EltDouble = id
+withNumElt EltInt8   = id
+withNumElt EltWord8  = id
+withNumElt EltInt16  = id
+withNumElt EltWord16 = id
+withNumElt EltInt32  = id
+withNumElt EltWord32 = id
+withNumElt EltInt64  = id
+withNumElt EltWord64 = id
+
 withRandomElt :: Elt a -> (Random a => r) -> r
 withRandomElt EltFloat  = id
 withRandomElt EltDouble = id
@@ -158,6 +172,18 @@ withEqElt EltInt32  = id
 withEqElt EltWord32 = id
 withEqElt EltInt64  = id
 withEqElt EltWord64 = id
+
+withOrdElt :: Elt a -> (Ord a => r) -> r
+withOrdElt EltFloat  = id
+withOrdElt EltDouble = id
+withOrdElt EltInt8   = id
+withOrdElt EltWord8  = id
+withOrdElt EltInt16  = id
+withOrdElt EltWord16 = id
+withOrdElt EltInt32  = id
+withOrdElt EltWord32 = id
+withOrdElt EltInt64  = id
+withOrdElt EltWord64 = id
 
 withBinaryElt :: Elt e -> (Binary e => r) -> r
 withBinaryElt EltFloat  = id
