@@ -7,7 +7,7 @@ import           Data.Binary
 import           Data.Data
 import           Data.Ratio
 import           Data.Text.Prettyprint.Doc
-import           GHC.Natural
+import           Numeric.Natural
 
 newtype Positive = Positive Natural
   deriving (Eq, Ord, Data)
@@ -62,3 +62,8 @@ plusNat n (Positive p) = Positive (n + p)
 
 divides :: Positive -> Positive -> Bool
 divides (Positive n) (Positive m) = m `mod` n == 0
+
+mkPositive :: Integral n => n -> Maybe Positive
+mkPositive n
+  | n > 0 = pure $ Positive (fromIntegral n)
+  | otherwise = Nothing
