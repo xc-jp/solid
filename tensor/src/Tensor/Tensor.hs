@@ -1,5 +1,6 @@
-{-# LANGUAGE GADTs      #-}
-{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE GADTs         #-}
+{-# LANGUAGE RankNTypes    #-}
+{-# LANGUAGE TupleSections #-}
 module Tensor.Tensor
   ( Tensor(..)
   , normal
@@ -7,13 +8,16 @@ module Tensor.Tensor
   , ones
   , zeroes
   , maybeEqTensor
-  , normals
+  , add
+  , addAbs
+  , normalize
   )
 where
 
 import Control.Monad.Random
 import Data.Positive
 import Data.Type.Equality
+import Prelude
 import Tensor.Elt
 import Tensor.Shape         (Dims)
 
@@ -77,3 +81,37 @@ zeroes dims e = let xs = replicate (fromIntegral $ product dims) 0
 ones :: Num e => Dims -> Elt e -> Tensor
 ones dims e = let xs = replicate (fromIntegral $ product dims) 1
   in Tensor dims e xs
+
+normalize :: Tensor -> Maybe Tensor
+normalize (Tensor dims e xs) = withOrdElt e $ maybeFloatingElt e Nothing $ Just $
+  let min' = minimum xs
+      max' = maximum xs
+      epsilon = 1e-11
+   in Tensor dims e (fmap (\x -> (x - min') / (max' - min' + epsilon)) xs)
+
+data Zippy a b = forall c. Zippy (Elt c, a -> b -> c)
+
+zipWithT
+  -- :: (forall a b. Elt a -> Elt b -> Maybe (SomeEltZip a b))
+  :: (forall a b. Elt a -> Elt b -> Maybe (Zippy a b))
+  -> Tensor
+  -> Tensor
+  -> Maybe Tensor
+zipWithT f (Tensor dims e xs) (Tensor _ e' ys)
+  = case f e e' of
+    Nothing               -> Nothing
+    Just (Zippy (elt, g)) -> Just $ Tensor dims elt (zipWith g xs ys)
+
+zipWithEq :: (forall e. Elt e -> Maybe (e -> e -> e)) -> Tensor -> Tensor -> Maybe Tensor
+zipWithEq g = zipWithT $ \e e' -> do
+  Refl <- testEquality e e'
+  f <- g e
+  pure (Zippy (e, f))
+
+addAbs :: Tensor -> Tensor -> Maybe Tensor
+addAbs = zipWithEq (\e -> withNumElt e (Just ap))
+  where
+  ap a b = abs a + abs b
+
+add :: Tensor -> Tensor -> Maybe Tensor
+add = zipWithEq (\e -> withNumElt e (Just (+)))
