@@ -1,10 +1,14 @@
 {-# LANGUAGE DeriveGeneric #-}
 
-module Tensor.Shape where
+module Tensor.Shape
+  ( Dims
+  , Shape(..)
+  )
+where
 
-import Data.Positive
 import Data.Binary
-import GHC.Generics (Generic)
+import Data.Positive
+import GHC.Generics  (Generic)
 
 type Dims = [Positive]
 
