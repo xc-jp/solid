@@ -2,11 +2,10 @@
 {-# LANGUAGE RankNTypes    #-}
 {-# LANGUAGE TupleSections #-}
 module Tensor.Tensor
-  ( Tensor(..)
+  ( Tensor(..), tensorDims, tensorElt
   , normal
   , xavier
-  , ones
-  , zeroes
+  , replicateTensor
   , maybeEqTensor
   , add
   , addAbs
@@ -23,6 +22,12 @@ import Tensor.Shape         (Dims)
 
 data Tensor where
   Tensor :: Dims -> Elt e -> [e] -> Tensor
+
+tensorDims :: Tensor -> Dims
+tensorDims (Tensor dims _ _) = dims
+
+tensorElt :: Tensor -> Some Elt
+tensorElt (Tensor _ elt _) = Some elt
 
 instance Eq Tensor where
     a@(Tensor sh _ _) == b@(Tensor sh' _ _)
@@ -74,13 +79,9 @@ xavier fanIn fanOut = fromListM (getRandomRs (-scale, scale))
   where
   scale = sqrt 3 / realToFrac (fanIn + fanOut)
 
-zeroes :: Num e => Dims -> Elt e -> Tensor
-zeroes dims e = let xs = replicate (fromIntegral $ product dims) 0
-  in Tensor dims e xs
-
-ones :: Num e => Dims -> Elt e -> Tensor
-ones dims e = let xs = replicate (fromIntegral $ product dims) 1
-  in Tensor dims e xs
+replicateTensor :: e -> Dims -> Elt e -> Tensor
+replicateTensor x dims elt = Tensor dims elt xs where
+  xs = replicate (fromIntegral $ product dims) x
 
 normalize :: Tensor -> Maybe Tensor
 normalize (Tensor dims e xs) = withOrdElt e $ maybeFloatingElt e Nothing $ Just $
