@@ -5,7 +5,7 @@ module Tensor.Tensor
   ( Tensor(..), tensorDims, tensorElt
   , normal
   , xavier
-  , replicateTensor
+  , fill
   , maybeEqTensor
   , add
   , addAbs
@@ -79,8 +79,8 @@ xavier fanIn fanOut = fromListM (getRandomRs (-scale, scale))
   where
   scale = sqrt 3 / realToFrac (fanIn + fanOut)
 
-replicateTensor :: e -> Dims -> Elt e -> Tensor
-replicateTensor x dims elt = Tensor dims elt xs where
+fill :: e -> Dims -> Elt e -> Tensor
+fill x dims elt = Tensor dims elt xs where
   xs = replicate (fromIntegral $ product dims) x
 
 normalize :: Tensor -> Maybe Tensor
