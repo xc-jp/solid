@@ -5,6 +5,8 @@ module Tensor.Tensor
   ( Tensor(..), tensorDims, tensorElt
   , normal
   , xavier
+  , xavier'
+  , msra
   , fill
   , maybeEqTensor
   , add
@@ -78,6 +80,30 @@ xavier :: (Random e, MonadRandom m, Floating e)
 xavier fanIn fanOut = fromListM (getRandomRs (-scale, scale))
   where
   scale = sqrt 3 / realToFrac (fanIn + fanOut)
+
+-- | Initialize with Xavier inialization using fan-in size only
+-- This replicates pytorch/caffe2 behavior.
+-- https://github.com/pytorch/pytorch/blob/e13e86724e6c5412434dd2547d927e871a469eae/caffe2/operators/filler_op.h#L434
+xavier'
+  ::(Random e, MonadRandom m, Floating e)
+  => Positive -- ^ fan-in size
+  -> Dims -- ^ tensor dimensions
+  -> Elt e -- ^ element type
+  -> m Tensor
+xavier' fanIn = fromListM (getRandomRs (-scale, scale))
+  where
+  scale = sqrt 3 / realToFrac fanIn
+
+-- | Initalize with He (MSRA) initialization.
+-- https://github.com/pytorch/pytorch/blob/e13e86724e6c5412434dd2547d927e871a469eae/caffe2/operators/filler_op.h#L463
+msra :: (Random e, MonadRandom m, Floating e)
+  => Positive -- ^ fan-out size
+  -> Dims -- ^ Tensor dimensions
+  -> Elt e -- ^ element type
+  -> m Tensor
+msra fanOut = normal 0 scale
+  where
+  scale = sqrt (2 / realToFrac fanOut)
 
 fill :: e -> Dims -> Elt e -> Tensor
 fill x dims elt = Tensor dims elt xs where
