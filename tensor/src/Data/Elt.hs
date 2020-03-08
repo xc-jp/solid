@@ -4,7 +4,7 @@
 {-# LANGUAGE RankNTypes         #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TypeFamilies       #-}
-module Tensor.Elt
+module Data.Elt
   ( Elt (..)
   , withRandomElt
   , withNumElt
@@ -13,8 +13,10 @@ module Tensor.Elt
   , withEqElt
   , withOrdElt
   , withBinaryElt
+  , withStorableElt
   , maybeFloatingElt
   , Some (..)
+  , KnownElt (..), withKnownElt
   ) where
 
 import Data.Binary
@@ -25,6 +27,7 @@ import Data.Int
 import Data.Some
 import Data.Text.Prettyprint.Doc (Pretty (..))
 import Data.Type.Equality
+import Data.Vector.Storable      (Storable)
 import GHC.Generics
 import System.Random             (Random)
 
@@ -214,3 +217,40 @@ withBinaryElt EltInt32  = id
 withBinaryElt EltWord32 = id
 withBinaryElt EltInt64  = id
 withBinaryElt EltWord64 = id
+
+withStorableElt :: Elt e -> (Storable e => r) -> r
+withStorableElt EltFloat  = id
+withStorableElt EltDouble = id
+withStorableElt EltInt8   = id
+withStorableElt EltWord8  = id
+withStorableElt EltInt16  = id
+withStorableElt EltWord16 = id
+withStorableElt EltInt32  = id
+withStorableElt EltWord32 = id
+withStorableElt EltInt64  = id
+withStorableElt EltWord64 = id
+
+class KnownElt e where knownElt :: Elt e
+
+instance KnownElt Float  where knownElt = EltFloat
+instance KnownElt Double where knownElt = EltDouble
+instance KnownElt Int8   where knownElt = EltInt8
+instance KnownElt Word8  where knownElt = EltWord8
+instance KnownElt Int16  where knownElt = EltInt16
+instance KnownElt Word16 where knownElt = EltWord16
+instance KnownElt Int32  where knownElt = EltInt32
+instance KnownElt Word32 where knownElt = EltWord32
+instance KnownElt Int64  where knownElt = EltInt64
+instance KnownElt Word64 where knownElt = EltWord64
+
+withKnownElt :: Elt e -> (KnownElt e => r) -> r
+withKnownElt EltFloat  = id
+withKnownElt EltDouble = id
+withKnownElt EltInt8   = id
+withKnownElt EltWord8  = id
+withKnownElt EltInt16  = id
+withKnownElt EltWord16 = id
+withKnownElt EltInt32  = id
+withKnownElt EltWord32 = id
+withKnownElt EltInt64  = id
+withKnownElt EltWord64 = id
