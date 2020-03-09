@@ -1,6 +1,7 @@
 {-# LANGUAGE GADTs         #-}
 {-# LANGUAGE RankNTypes    #-}
 {-# LANGUAGE TupleSections #-}
+{-# LANGUAGE OverloadedStrings #-}
 module Tensor.Tensor
   ( Tensor(..), tensorDims, tensorElt
   , normal
@@ -21,9 +22,18 @@ import Data.Type.Equality
 import Prelude
 import Tensor.Elt
 import Tensor.Shape         (Dims)
+import Data.Text.Prettyprint.Doc (Pretty(..),(<+>))
 
 data Tensor where
   Tensor :: Dims -> Elt e -> [e] -> Tensor
+
+instance Pretty Tensor where
+  pretty (Tensor dims e xs) = withRealElt e $ "Tensor" <+> pretty dims <+> pretty (Some e) <+> pretty (mu xs, sigma xs)
+    where
+    mu :: Real a => [a] -> Float
+    mu as = realToFrac (sum as) / realToFrac (length as)
+    sigma as = let m = mu as in
+      mu ((\a -> (m-a)**2) . realToFrac <$> as)
 
 tensorDims :: Tensor -> Dims
 tensorDims (Tensor dims _ _) = dims

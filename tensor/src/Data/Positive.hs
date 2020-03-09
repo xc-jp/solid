@@ -6,10 +6,14 @@ import Data.Aeson
 import Data.Binary
 import Data.Data
 import Data.Ratio
+import Data.Text.Prettyprint.Doc
 import GHC.Natural
 
 newtype Positive = Positive Natural
   deriving (Eq, Ord, Data)
+
+instance Pretty Positive where
+  pretty (Positive n) = pretty n
 
 instance Show Positive where
   showsPrec d (Positive n) = showsPrec d n

@@ -1,4 +1,5 @@
-{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveGeneric     #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Tensor.Shape
   ( Dims
@@ -8,7 +9,8 @@ where
 
 import Data.Binary
 import Data.Positive
-import GHC.Generics  (Generic)
+import Data.Text.Prettyprint.Doc
+import GHC.Generics              (Generic)
 
 type Dims = [Positive]
 
@@ -21,3 +23,10 @@ data Shape = Shape
   deriving (Eq, Show, Generic)
 
 instance Binary Shape
+
+instance Pretty Shape where
+  pretty (Shape dims b) = encloseSep mempty mempty "×" (prettyBatch b : fmap pretty (reverse dims))
+    where
+    prettyBatch :: Maybe Positive -> Doc ann
+    prettyBatch Nothing  = "?"
+    prettyBatch (Just b) = pretty b

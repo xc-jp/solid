@@ -29,6 +29,7 @@ library
     , aeson
     , binary
     , MonadRandom
+    , prettyprinter
   ghc-options:
     -Wall
     -Wno-name-shadowing

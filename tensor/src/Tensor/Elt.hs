@@ -8,6 +8,7 @@ module Tensor.Elt
   ( Elt (..)
   , withRandomElt
   , withNumElt
+  , withRealElt
   , withShowElt
   , withEqElt
   , withOrdElt
@@ -17,13 +18,15 @@ module Tensor.Elt
   ) where
 
 import Data.Binary
+import Data.Char                 (toLower)
 import Data.GADT.Compare
 import Data.GADT.Show
 import Data.Int
 import Data.Some
+import Data.Text.Prettyprint.Doc (Pretty (..))
 import Data.Type.Equality
 import GHC.Generics
-import System.Random      (Random)
+import System.Random             (Random)
 
 -- | Supported tensor element types
 data Elt a where
@@ -39,6 +42,9 @@ data Elt a where
   EltWord64 :: Elt Word64
 deriving instance Eq (Elt a)
 deriving instance Show (Elt a)
+
+instance Pretty (Some Elt) where
+  pretty (Some e) = pretty $ fmap toLower $ drop 3 $ show e
 
 -- We can't derive Generic for Elt since it is a GADT, so EltTag is used here
 -- to get a Binary instance for Some Elt without us having to keep track of the
@@ -124,6 +130,18 @@ withNumElt EltInt32  = id
 withNumElt EltWord32 = id
 withNumElt EltInt64  = id
 withNumElt EltWord64 = id
+
+withRealElt :: Elt a -> (Real a => r) -> r
+withRealElt EltFloat  = id
+withRealElt EltDouble = id
+withRealElt EltInt8   = id
+withRealElt EltWord8  = id
+withRealElt EltInt16  = id
+withRealElt EltWord16 = id
+withRealElt EltInt32  = id
+withRealElt EltWord32 = id
+withRealElt EltInt64  = id
+withRealElt EltWord64 = id
 
 withRandomElt :: Elt a -> (Random a => r) -> r
 withRandomElt EltFloat  = id
