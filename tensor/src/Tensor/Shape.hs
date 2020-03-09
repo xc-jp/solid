@@ -1,5 +1,4 @@
-{-# LANGUAGE DeriveGeneric     #-}
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE DeriveGeneric #-}
 
 module Tensor.Shape
   ( Dims
@@ -25,8 +24,8 @@ data Shape = Shape
 instance Binary Shape
 
 instance Pretty Shape where
-  pretty (Shape dims b) = encloseSep mempty mempty "×" (prettyBatch b : fmap pretty (reverse dims))
+  pretty (Shape dims b) = concatWith (\x y -> x <> pretty "×" <> y) (prettyBatch b : fmap pretty (reverse dims))
     where
     prettyBatch :: Maybe Positive -> Doc ann
-    prettyBatch Nothing  = "?"
+    prettyBatch Nothing  = pretty "?"
     prettyBatch (Just b) = pretty b

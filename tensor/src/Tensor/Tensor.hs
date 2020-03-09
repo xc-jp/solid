@@ -28,7 +28,10 @@ data Tensor where
   Tensor :: Dims -> Elt e -> [e] -> Tensor
 
 instance Pretty Tensor where
-  pretty (Tensor dims e xs) = withRealElt e $ "Tensor" <+> pretty dims <+> pretty (Some e) <+> pretty (mu xs, sigma xs)
+  pretty (Tensor dims e xs)
+    = withRealElt e
+    $ "Tensor" <+> pretty dims <+> pretty (Some e)
+    <+> pretty ("μ=" <> show (mu xs), "σ=" <> show (sigma xs))
     where
     mu :: Real a => [a] -> Float
     mu as = realToFrac (sum as) / realToFrac (length as)
