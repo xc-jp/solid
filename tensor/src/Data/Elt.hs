@@ -16,7 +16,7 @@ module Data.Elt
   , withStorableElt
   , maybeFloatingElt
   , Some (..)
-  , KnownElt (..), withKnownElt
+  , KnownElt (..), fromSample, withKnownElt
   ) where
 
 import Data.Binary
@@ -231,6 +231,9 @@ withStorableElt EltInt64  = id
 withStorableElt EltWord64 = id
 
 class KnownElt e where knownElt :: Elt e
+
+fromSample :: KnownElt e => e -> Elt e
+fromSample _ = knownElt
 
 instance KnownElt Float  where knownElt = EltFloat
 instance KnownElt Double where knownElt = EltDouble

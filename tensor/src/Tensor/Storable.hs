@@ -4,7 +4,10 @@
 module Tensor.Storable
   ( STensor
   , Tensor (..)
+  , tensorDims
+  , tensorElt
   , fromTensorList
+  , toTensorList
   , fromList
   , Tensor.Storable.replicate
   , fill
@@ -13,7 +16,10 @@ module Tensor.Storable
   , unfoldM
   , normal
   , xavier
+  , xavier'
+  , msra
   , normalize
+  , Storable, Vector
   ) where
 
 import           Control.Monad.Random (MonadRandom, Random)
@@ -54,6 +60,12 @@ fromTensorList
   -> Tensor Vector
 fromTensorList (Tensor dims elt es) = withStorableElt elt $
   Tensor dims elt (V.fromList es)
+
+toTensorList
+  :: Tensor Vector
+  -> Tensor []
+toTensorList (Tensor dims elt es) = withStorableElt elt $
+  Tensor dims elt (V.toList es)
 
 replicate
   :: (KnownElt e, Storable e)
@@ -110,6 +122,24 @@ xavier
   -> m STensor
 xavier fanIn fanOut dims elt = Tensor dims elt <$>
   V.replicateM (dimsSize dims) (genXavier fanIn fanOut)
+
+xavier'
+  :: (MonadRandom m, Storable e, Random e, Floating e)
+  => Positive
+  -> Dims
+  -> Elt e
+  -> m STensor
+xavier' fanIn dims elt = Tensor dims elt <$>
+  V.replicateM (dimsSize dims) (genXavierFanIn fanIn)
+
+msra
+  :: (MonadRandom m, Storable e, Random e, Floating e)
+  => Positive
+  -> Dims
+  -> Elt e
+  -> m STensor
+msra fanIn dims elt = Tensor dims elt <$>
+  V.replicateM (dimsSize dims) (genMSRA fanIn)
 
 normalize :: STensor -> Maybe STensor
 normalize (Tensor dims e xs) = withStorableElt e $ withOrdElt e $ maybeFloatingElt e Nothing $ Just $
