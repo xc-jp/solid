@@ -9,6 +9,7 @@ module Tensor.Storable
   , fromTensorList
   , toTensorList
   , fromList
+  , fromListFail
   , Tensor.Storable.replicate
   , fill
   , fillM
@@ -23,6 +24,7 @@ module Tensor.Storable
   ) where
 
 import           Control.Monad.Random (MonadRandom, Random)
+import           Control.Monad.Fail (MonadFail)
 import           Data.Vector.Storable (Storable, Vector)
 import qualified Data.Vector.Storable as V
 
@@ -49,11 +51,10 @@ fromList dims es = if V.length v == n then pure (Tensor dims knownElt v) else No
     n = dimsSize dims
     v = V.fromListN n es
 
--- fromListFail
---   :: (MonadFail m, KnownElt e, Storable e)
---   => Dims -> [e] -> m STensor
--- fromListFail dims gen = do
---   fromList dims <$> gen
+fromListFail
+  :: (MonadFail m, KnownElt e, Storable e)
+  => Dims -> [e] -> m STensor
+fromListFail dims es = maybe (fail "fromListFail: list too short") pure $ fromList dims es
 
 fromTensorList
   :: Tensor []
