@@ -1,4 +1,5 @@
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE GADTs #-}
 {-# LANGUAGE RankNTypes #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
@@ -17,7 +18,7 @@ module Tensor.Storable
   , fillM
   , unfold
   , unfoldM
-  , mapMono, mapMonoM
+  , mapMono, mapMonoM, zipMono
   , normal
   , xavier
   , xavier'
@@ -26,9 +27,11 @@ module Tensor.Storable
   , Storable, Vector
   ) where
 
+import           Control.Monad
 import           Control.Monad.Random (MonadRandom, Random)
 import           Control.Monad.Fail (MonadFail)
 import           Data.Vector.Storable (Storable, Vector)
+import           Data.Type.Equality
 import qualified Data.Vector.Storable as V
 
 import Data.Elt
@@ -169,3 +172,13 @@ mapMonoM
   -> m STensor
 mapMonoM f (Tensor dims elt xs) = withStorableElt elt $
   Tensor dims elt <$> V.mapM (f elt) xs
+
+zipMono
+  :: (forall a. Elt a -> a -> a -> a)
+  -> STensor
+  -> STensor
+  -> Maybe STensor
+zipMono f (Tensor d1 e1 x1) (Tensor d2 e2 x2) = do
+  guard $ d1 == d2
+  Refl <- testEquality e1 e2
+  pure $ withStorableElt e1 $ Tensor d1 e1 $ V.zipWith (f e1) x1 x2
