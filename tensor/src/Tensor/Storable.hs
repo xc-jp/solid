@@ -1,4 +1,5 @@
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE RankNTypes #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Tensor.Storable
@@ -10,11 +11,13 @@ module Tensor.Storable
   , toTensorList
   , fromList
   , fromListFail
+  , singleton
   , Tensor.Storable.replicate
   , fill
   , fillM
   , unfold
   , unfoldM
+  , mapMono, mapMonoM
   , normal
   , xavier
   , xavier'
@@ -55,6 +58,9 @@ fromListFail
   :: (MonadFail m, KnownElt e, Storable e)
   => Dims -> [e] -> m STensor
 fromListFail dims es = maybe (fail "fromListFail: list too short") pure $ fromList dims es
+
+singleton :: (KnownElt e, Storable e) => e -> STensor
+singleton e = Tensor [] knownElt (V.singleton e)
 
 fromTensorList
   :: Tensor []
@@ -148,3 +154,18 @@ normalize (Tensor dims e xs) = withStorableElt e $ withOrdElt e $ maybeFloatingE
       max' = V.maximum xs
       epsilon = 1e-11
    in Tensor dims e (V.map (\x -> (x - min') / (max' - min' + epsilon)) xs)
+
+mapMono
+  :: (forall a. Elt a -> a -> a)
+  -> STensor
+  -> STensor
+mapMono f (Tensor dims elt xs) = withStorableElt elt $
+  Tensor dims elt (V.map (f elt) xs)
+
+mapMonoM
+  :: Monad m
+  => (forall a. Elt a -> a -> m a )
+  -> STensor
+  -> m STensor
+mapMonoM f (Tensor dims elt xs) = withStorableElt elt $
+  Tensor dims elt <$> V.mapM (f elt) xs
