@@ -13,12 +13,12 @@ module Tensor.Storable
   , fromList
   , fromListFail
   , singleton
-  , Tensor.Storable.replicate
   , fill
   , fillM
   , unfold
   , unfoldM
-  , mapMono, mapMonoM, zipMono
+  , mapMono, mapMonoM
+  , zipMono, zipMonoM
   , normal
   , xavier
   , xavier'
@@ -76,13 +76,6 @@ toTensorList
   -> Tensor []
 toTensorList (Tensor dims elt es) = withStorableElt elt $
   Tensor dims elt (V.toList es)
-
-replicate
-  :: (KnownElt e, Storable e)
-  => Dims
-  -> e
-  -> STensor
-replicate dims act = Tensor dims knownElt $ V.replicate (dimsSize dims) act
 
 unfold
   :: (Storable e, KnownElt e)
@@ -182,3 +175,15 @@ zipMono f (Tensor d1 e1 x1) (Tensor d2 e2 x2) = do
   guard $ d1 == d2
   Refl <- testEquality e1 e2
   pure $ withStorableElt e1 $ Tensor d1 e1 $ V.zipWith (f e1) x1 x2
+
+zipMonoM
+  :: MonadFail m
+  => (forall a. Elt a -> a -> a -> m a)
+  -> STensor
+  -> STensor
+  -> m STensor
+zipMonoM f (Tensor d1 e1 x1) (Tensor d2 e2 x2) = do
+  unless (d1 == d2) $ fail "zipMonoM: Tensors have different dimensions"
+  case testEquality e1 e2 of
+    Nothing -> fail "zipMonoM: Tensors have different element types"
+    Just Refl -> withStorableElt e1 $ Tensor d1 e1 <$> V.zipWithM (f e1) x1 x2
