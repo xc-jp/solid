@@ -1,8 +1,9 @@
 {-# LANGUAGE DeriveGeneric #-}
 
-module Tensor.Shape
+module Data.Shape
   ( Dims
   , Shape(..)
+  , dimsSize
   )
 where
 
@@ -12,6 +13,9 @@ import Data.Text.Prettyprint.Doc
 import GHC.Generics              (Generic)
 
 type Dims = [Positive]
+
+dimsSize :: Dims -> Int
+dimsSize = product . fmap fromIntegral
 
 -- | Shape, potentially annotated with a batch size.
 --   Shapes are reversed; i.e. the fastest changing element comes first.

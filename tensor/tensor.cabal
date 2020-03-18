@@ -14,9 +14,12 @@ cabal-version:       >=1.10
 
 library
   exposed-modules:
-    Tensor.Tensor
-    Tensor.Elt
-    Tensor.Shape
+    Tensor.Common
+    Tensor.Storable
+    Tensor.Proxy
+    Tensor.List
+    Data.Elt
+    Data.Shape
     Data.Positive
   default-language:
     Haskell2010
@@ -30,6 +33,7 @@ library
     , binary
     , MonadRandom
     , prettyprinter
+    , vector
   ghc-options:
     -Wall
     -Wno-name-shadowing
