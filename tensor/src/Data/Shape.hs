@@ -4,6 +4,7 @@ module Data.Shape
   ( Dims
   , Shape(..)
   , dimsSize
+  , unifyShapes
   )
 where
 
@@ -33,3 +34,17 @@ instance Pretty Shape where
     prettyBatch :: Maybe Positive -> Doc ann
     prettyBatch Nothing  = pretty "?"
     prettyBatch (Just b) = pretty b
+
+-- | Find, if possible, the most general shape that matches both arguments.
+unifyShapes
+  :: Shape
+  -> Shape
+  -> Either String Shape
+unifyShapes (Shape da ba) (Shape db bb) = Shape da <$>
+  case (ba,bb) of
+    _ | da /= db -> Left "Dimensions differ"
+    (Just b,Just b')
+      | b /= b' -> Left "Batches differ"
+      | otherwise -> pure $ Just b
+    (Nothing,b) -> pure b
+    (b,Nothing) -> pure b

@@ -16,6 +16,8 @@ module Tensor.Common
   , tensorUnfoldM
   , tensorTrans
   , tensorTransM
+  , tensorPut
+  , tensorGet
   , genNormal
   , genXavier
   , genXavierFanIn
@@ -26,8 +28,12 @@ where
 import           Control.Monad.Random (MonadRandom, Random, getRandom,
                                        getRandomR)
 import           Data.Elt
+import           Data.Elt
+import           Data.Positive
 import           Data.Positive
 import           Data.Shape
+import           Data.Shape
+import           Data.Some
 import           Data.Type.Equality
 
 data Tensor v where Tensor :: Dims -> Elt e -> v e -> Tensor v
@@ -37,6 +43,25 @@ tensorDims (Tensor dims _ _) = dims
 
 tensorElt :: Tensor v -> Some Elt
 tensorElt (Tensor _ elt _) = Some elt
+
+tensorPut
+  :: Monoid m
+  => (Dims -> m)
+  -> (Some Elt -> m)
+  -> (forall e. Elt e -> v e -> m)
+  -> (Tensor v -> m)
+tensorPut putDims putElt putV (Tensor d e v) = putDims d <> putElt (Some e) <> putV e v
+
+tensorGet
+  :: Monad m
+  => m Dims
+  -> m (Some Elt)
+  -> (forall e. Elt e -> m (v e))
+  -> m (Tensor v)
+tensorGet getDims getElt getV = do
+  dims <- getDims
+  selt <- getElt
+  withSome selt $ \elt -> Tensor dims elt <$> getV elt
 
 tensorEq
   :: (forall e. Eq e => Elt e -> v e -> v e -> r)

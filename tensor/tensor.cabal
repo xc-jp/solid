@@ -34,6 +34,7 @@ library
     , MonadRandom
     , prettyprinter
     , vector
+    , vector-binary-instances
   ghc-options:
     -Wall
     -Wno-name-shadowing

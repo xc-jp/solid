@@ -30,10 +30,12 @@ module Tensor.Storable
 import           Control.Monad
 import           Control.Monad.Fail   (MonadFail)
 import           Control.Monad.Random (MonadRandom, Random)
+import           Data.Binary
 import           Data.Elt
 import           Data.Positive
 import           Data.Shape
 import           Data.Type.Equality
+import qualified Data.Vector.Binary   ()
 import           Data.Vector.Storable (Storable, Vector)
 import qualified Data.Vector.Storable as V
 import           Tensor.Common
@@ -45,6 +47,10 @@ instance Show STensor where
 
 instance Eq STensor where
   (==) = tensorEq (\e -> withStorableElt e (==)) False
+
+instance Binary STensor where
+  put = tensorPut put put (\e -> withBinaryElt e $ withStorableElt e $ put)
+  get = tensorGet get get (\e -> withBinaryElt e $ withStorableElt e $ get)
 
 fromList
   :: (KnownElt e, Storable e)
