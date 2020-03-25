@@ -16,16 +16,14 @@ module Tensor.List
   , normalize
   ) where
 
-import Data.List (unfoldr)
-
-import Control.Monad        as Monad
-import Control.Monad.Fail   (MonadFail)
-import Control.Monad.Random (MonadRandom, Random)
-
-import Data.Elt
-import Data.Positive
-import Data.Shape
-import Tensor.Common
+import           Control.Monad        as Monad
+import           Control.Monad.Fail   (MonadFail)
+import           Control.Monad.Random (MonadRandom, Random)
+import           Data.Elt
+import           Data.List            (unfoldr)
+import           Data.Positive
+import           Data.Shape
+import           Tensor.Common
 
 type LTensor = Tensor []
 

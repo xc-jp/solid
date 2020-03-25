@@ -19,17 +19,17 @@ module Data.Elt
   , KnownElt (..), fromSample, withKnownElt
   ) where
 
-import Data.Binary
-import Data.Char                 (toLower)
-import Data.GADT.Compare
-import Data.GADT.Show
-import Data.Int
-import Data.Some
-import Data.Text.Prettyprint.Doc (Pretty (..))
-import Data.Type.Equality
-import Data.Vector.Storable      (Storable)
-import GHC.Generics
-import System.Random             (Random)
+import           Data.Binary
+import           Data.Char                 (toLower)
+import           Data.GADT.Compare
+import           Data.GADT.Show
+import           Data.Int
+import           Data.Some
+import           Data.Text.Prettyprint.Doc (Pretty (..))
+import           Data.Type.Equality
+import           Data.Vector.Storable      (Storable)
+import           GHC.Generics
+import           System.Random             (Random)
 
 -- | Supported tensor element types
 data Elt a where

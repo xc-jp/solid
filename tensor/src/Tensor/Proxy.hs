@@ -9,11 +9,10 @@ module Tensor.Proxy
   , fromProxy
   ) where
 
-import Data.Proxy
-
-import Data.Elt
-import Data.Shape
-import Tensor.Common
+import           Data.Elt
+import           Data.Proxy
+import           Data.Shape
+import           Tensor.Common
 
 type PTensor = Tensor Proxy
 

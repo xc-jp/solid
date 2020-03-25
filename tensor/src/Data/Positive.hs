@@ -1,13 +1,13 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 module Data.Positive where
 
-import Control.Exception
-import Data.Aeson
-import Data.Binary
-import Data.Data
-import Data.Ratio
-import Data.Text.Prettyprint.Doc
-import GHC.Natural
+import           Control.Exception
+import           Data.Aeson
+import           Data.Binary
+import           Data.Data
+import           Data.Ratio
+import           Data.Text.Prettyprint.Doc
+import           GHC.Natural
 
 newtype Positive = Positive Natural
   deriving (Eq, Ord, Data)
