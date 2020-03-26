@@ -1,6 +1,6 @@
 {-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE GADTs #-}
-{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE GADTs             #-}
+{-# LANGUAGE RankNTypes        #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Tensor.Storable
@@ -28,16 +28,15 @@ module Tensor.Storable
   ) where
 
 import           Control.Monad
+import           Control.Monad.Fail   (MonadFail)
 import           Control.Monad.Random (MonadRandom, Random)
-import           Control.Monad.Fail (MonadFail)
-import           Data.Vector.Storable (Storable, Vector)
+import           Data.Elt
+import           Data.Positive
+import           Data.Shape
 import           Data.Type.Equality
+import           Data.Vector.Storable (Storable, Vector)
 import qualified Data.Vector.Storable as V
-
-import Data.Elt
-import Data.Positive
-import Data.Shape
-import Tensor.Common
+import           Tensor.Common
 
 type STensor = Tensor Vector
 

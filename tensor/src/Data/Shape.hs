@@ -7,10 +7,10 @@ module Data.Shape
   )
 where
 
-import Data.Binary
-import Data.Positive
-import Data.Text.Prettyprint.Doc
-import GHC.Generics              (Generic)
+import           Data.Binary
+import           Data.Positive
+import           Data.Text.Prettyprint.Doc
+import           GHC.Generics              (Generic)
 
 type Dims = [Positive]
 

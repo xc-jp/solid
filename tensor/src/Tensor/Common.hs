@@ -25,11 +25,10 @@ where
 
 import           Control.Monad.Random (MonadRandom, Random, getRandom,
                                        getRandomR)
+import           Data.Elt
+import           Data.Positive
+import           Data.Shape
 import           Data.Type.Equality
-
-import Data.Elt
-import Data.Positive
-import Data.Shape
 
 data Tensor v where Tensor :: Dims -> Elt e -> v e -> Tensor v
 
