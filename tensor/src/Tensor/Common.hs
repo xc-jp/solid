@@ -28,10 +28,7 @@ where
 import           Control.Monad.Random (MonadRandom, Random, getRandom,
                                        getRandomR)
 import           Data.Elt
-import           Data.Elt
 import           Data.Positive
-import           Data.Positive
-import           Data.Shape
 import           Data.Shape
 import           Data.Some
 import           Data.Type.Equality
