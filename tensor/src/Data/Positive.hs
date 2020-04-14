@@ -50,6 +50,8 @@ instance Enum Positive where
   fromEnum (Positive n) = fromIntegral n - 1
 
 instance Integral Positive where
+  div (Positive x) (Positive y) = Positive (x `div` y)
+  quot (Positive x) (Positive y) = Positive (x `quot` y)
   quotRem (Positive x) (Positive y) =
     let (q,r) = quotRem x y in (fromIntegral q, fromIntegral r)
   toInteger (Positive x) = toInteger x
@@ -57,3 +59,6 @@ instance Integral Positive where
 -- | Necessary because @(fromIntegral n) + p@ should be safe, but errors because of possible intermediate @Positive 0@.
 plusNat :: Natural -> Positive -> Positive
 plusNat n (Positive p) = Positive (n + p)
+
+divides :: Positive -> Positive -> Bool
+divides (Positive n) (Positive m) = m `mod` n == 0
