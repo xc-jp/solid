@@ -158,7 +158,7 @@ withRandomElt EltWord32 = id
 withRandomElt EltInt64  = id
 withRandomElt EltWord64 = id
 
-maybeFloatingElt :: Elt a -> r -> (Floating a => r) -> r
+maybeFloatingElt :: Elt a -> (Integral a => r) -> (Floating a => r) -> r
 maybeFloatingElt EltFloat  _ r = r
 maybeFloatingElt EltDouble _ r = r
 maybeFloatingElt EltInt8   z _ = z

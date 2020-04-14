@@ -1,6 +1,7 @@
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE GADTs             #-}
-{-# LANGUAGE RankNTypes        #-}
+{-# LANGUAGE FlexibleInstances   #-}
+{-# LANGUAGE GADTs               #-}
+{-# LANGUAGE RankNTypes          #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Tensor.Storable
@@ -24,6 +25,7 @@ module Tensor.Storable
   , xavier'
   , msra
   , normalize
+  , meanVar
   , Storable, Vector
   ) where
 
@@ -149,6 +151,17 @@ msra
 msra fanIn dims elt = Tensor dims elt <$>
   V.replicateM (dimsSize dims) (genMSRA fanIn)
 
+meanVar
+  :: STensor
+  -> (Double, Double)
+meanVar (Tensor _ e v) = withStorableElt e $ withRealElt e $
+  let mean v = V.sum v / realToFrac (V.length v)
+      vDouble = V.map realToFrac v
+      u = mean vDouble
+      var = mean $ V.map (\x -> let d = x-u in d*d) vDouble
+   in (u, var)
+
+-- | Normalizes a tensor of floating values to the 0-1 range
 normalize :: STensor -> Maybe STensor
 normalize (Tensor dims e xs) = withStorableElt e $ withOrdElt e $ maybeFloatingElt e Nothing $ Just $
   let min' = V.minimum xs
