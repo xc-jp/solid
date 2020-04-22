@@ -11,14 +11,17 @@ module Data.Elt
   , withRealElt
   , withShowElt
   , withEqElt
+  , withAEqElt
   , withOrdElt
   , withBinaryElt
   , withStorableElt
   , maybeFloatingElt
+  , equalElt
   , Some (..)
   , KnownElt (..), fromSample, withKnownElt
   ) where
 
+import           Data.AEq                  (AEq)
 import           Data.Binary
 import           Data.Char                 (toLower)
 import           Data.GADT.Compare
@@ -117,6 +120,9 @@ instance TestEquality Elt where
   testEquality EltWord64 EltWord64 = Just Refl
   testEquality EltWord64 _         = Nothing
 
+equalElt :: Elt a -> Elt b -> r -> (a ~ b => r) -> r
+equalElt ea eb r0 r = maybe r0 (\Refl -> r) (testEquality ea eb)
+
 -- | This gives us Eq for Some Elt
 instance GEq Elt where geq = testEquality
 
@@ -161,7 +167,13 @@ withRandomElt EltInt64  = id
 withRandomElt EltWord64 = id
 {-# INLINE withRandomElt #-}
 
-maybeFloatingElt :: Elt a -> (Integral a => r) -> (Floating a => r) -> r
+-- 'RealFloat' implies 'Floating', 'RealFrac', 'Real', 'Fractional', 'Num',
+-- 'Ord', 'Eq'
+maybeFloatingElt
+  :: Elt a
+  -> (Integral a => r)
+  -> (RealFloat a => r)
+  -> r
 maybeFloatingElt EltFloat  _ r = r
 maybeFloatingElt EltDouble _ r = r
 maybeFloatingElt EltInt8   z _ = z
@@ -267,3 +279,16 @@ withKnownElt EltWord32 = id
 withKnownElt EltInt64  = id
 withKnownElt EltWord64 = id
 {-# INLINE withKnownElt #-}
+
+withAEqElt :: Elt e -> (AEq e => r) -> r
+withAEqElt EltFloat  = id
+withAEqElt EltDouble = id
+withAEqElt EltInt8   = id
+withAEqElt EltWord8  = id
+withAEqElt EltInt16  = id
+withAEqElt EltWord16 = id
+withAEqElt EltInt32  = id
+withAEqElt EltWord32 = id
+withAEqElt EltInt64  = id
+withAEqElt EltWord64 = id
+{-# INLINE withAEqElt #-}

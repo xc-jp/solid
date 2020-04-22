@@ -32,6 +32,7 @@ module Tensor.Storable
 import           Control.Monad
 import           Control.Monad.Fail   (MonadFail)
 import           Control.Monad.Random (MonadRandom, Random)
+import           Data.AEq
 import           Data.Binary
 import           Data.Binary.Get      (getDoublebe, getFloatbe, label)
 import           Data.Binary.Put      (putDoublebe, putFloatbe)
@@ -52,6 +53,10 @@ instance Show STensor where
 
 instance Eq STensor where
   (==) = tensorEq (\e -> withStorableElt e (==)) False
+
+instance AEq STensor where
+  -- (===) = tensorEq (\e -> withAEqElt e $ withStorableElt e ((V.and.) . V.zipWith (===))) False
+  (~==) = tensorEq (\e -> withAEqElt e $ withStorableElt e ((V.and.) . V.zipWith (~==))) False
 
 instance Binary STensor where
   put = tensorPut put put $ \e -> withBinaryElt e $ withStorableElt e $ case e of

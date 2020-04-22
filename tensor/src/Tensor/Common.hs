@@ -11,6 +11,7 @@ module Tensor.Common
   , tensorDims
   , tensorElt
   , tensorEq
+  , tensorAEq
   , tensorShowPrec
   , tensorUnfold
   , tensorUnfoldM
@@ -27,6 +28,7 @@ where
 
 import           Control.Monad.Random (MonadRandom, Random, getRandom,
                                        getRandomR)
+import           Data.AEq
 import           Data.Elt
 import           Data.Positive
 import           Data.Shape
@@ -69,6 +71,17 @@ tensorEq
 tensorEq comp r0 (Tensor sa ea va) (Tensor sb eb vb)
   | sa == sb
   , Just Refl <- testEquality ea eb = withEqElt ea $ comp ea va vb
+  | otherwise = r0
+
+tensorAEq
+  :: (forall e. AEq e => Elt e -> v e -> v e -> r)
+  -> r
+  -> Tensor v
+  -> Tensor v
+  -> r
+tensorAEq comp r0 (Tensor sa ea va) (Tensor sb eb vb)
+  | sa == sb
+  , Just Refl <- testEquality ea eb = withAEqElt ea $ comp ea va vb
   | otherwise = r0
 
 tensorShowPrec
