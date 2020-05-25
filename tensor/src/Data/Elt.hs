@@ -133,6 +133,7 @@ withNumElt EltInt32  = id
 withNumElt EltWord32 = id
 withNumElt EltInt64  = id
 withNumElt EltWord64 = id
+{-# INLINE withNumElt #-}
 
 withRealElt :: Elt a -> (Real a => r) -> r
 withRealElt EltFloat  = id
@@ -145,6 +146,7 @@ withRealElt EltInt32  = id
 withRealElt EltWord32 = id
 withRealElt EltInt64  = id
 withRealElt EltWord64 = id
+{-# INLINE withRealElt #-}
 
 withRandomElt :: Elt a -> (Random a => r) -> r
 withRandomElt EltFloat  = id
@@ -157,6 +159,7 @@ withRandomElt EltInt32  = id
 withRandomElt EltWord32 = id
 withRandomElt EltInt64  = id
 withRandomElt EltWord64 = id
+{-# INLINE withRandomElt #-}
 
 maybeFloatingElt :: Elt a -> (Integral a => r) -> (Floating a => r) -> r
 maybeFloatingElt EltFloat  _ r = r
@@ -169,6 +172,7 @@ maybeFloatingElt EltInt32  z _ = z
 maybeFloatingElt EltWord32 z _ = z
 maybeFloatingElt EltInt64  z _ = z
 maybeFloatingElt EltWord64 z _ = z
+{-# INLINE maybeFloatingElt #-}
 
 withShowElt :: Elt e -> (Show e => r) -> r
 withShowElt EltFloat  = id
@@ -181,6 +185,7 @@ withShowElt EltInt32  = id
 withShowElt EltWord32 = id
 withShowElt EltInt64  = id
 withShowElt EltWord64 = id
+{-# INLINE withShowElt #-}
 
 withEqElt :: Elt a -> (Eq a => r) -> r
 withEqElt EltFloat  = id
@@ -193,6 +198,7 @@ withEqElt EltInt32  = id
 withEqElt EltWord32 = id
 withEqElt EltInt64  = id
 withEqElt EltWord64 = id
+{-# INLINE withEqElt #-}
 
 withOrdElt :: Elt a -> (Ord a => r) -> r
 withOrdElt EltFloat  = id
@@ -205,6 +211,7 @@ withOrdElt EltInt32  = id
 withOrdElt EltWord32 = id
 withOrdElt EltInt64  = id
 withOrdElt EltWord64 = id
+{-# INLINE withOrdElt #-}
 
 withBinaryElt :: Elt e -> (Binary e => r) -> r
 withBinaryElt EltFloat  = id
@@ -217,6 +224,7 @@ withBinaryElt EltInt32  = id
 withBinaryElt EltWord32 = id
 withBinaryElt EltInt64  = id
 withBinaryElt EltWord64 = id
+{-# INLINE withBinaryElt #-}
 
 withStorableElt :: Elt e -> (Storable e => r) -> r
 withStorableElt EltFloat  = id
@@ -229,6 +237,7 @@ withStorableElt EltInt32  = id
 withStorableElt EltWord32 = id
 withStorableElt EltInt64  = id
 withStorableElt EltWord64 = id
+{-# INLINE withStorableElt #-}
 
 class KnownElt e where knownElt :: Elt e
 
@@ -257,3 +266,4 @@ withKnownElt EltInt32  = id
 withKnownElt EltWord32 = id
 withKnownElt EltInt64  = id
 withKnownElt EltWord64 = id
+{-# INLINE withKnownElt #-}
