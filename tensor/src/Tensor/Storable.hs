@@ -33,7 +33,7 @@ import           Control.Monad
 import           Control.Monad.Fail   (MonadFail)
 import           Control.Monad.Random (MonadRandom, Random)
 import           Data.Binary
-import           Data.Binary.Get      (getDoublebe, getFloatbe)
+import           Data.Binary.Get      (getDoublebe, getFloatbe, label)
 import           Data.Binary.Put      (putDoublebe, putFloatbe)
 import           Data.Elt
 import           Data.Positive
@@ -60,10 +60,13 @@ instance Binary STensor where
     EltFloat  -> genericPutVectorWith put putFloatbe
     EltDouble -> genericPutVectorWith put putDoublebe
     _         -> put
-  get = tensorGet get get $ \e -> withBinaryElt e $ withStorableElt e $ case e of
-    EltFloat  -> genericGetVectorWith get getFloatbe
-    EltDouble -> genericGetVectorWith get getDoublebe
-    _         -> get
+  get = label "STensor" $ tensorGet (label "Dims" get) (label "Elt" get) $
+    \e -> withBinaryElt e $ withStorableElt e $ case e of
+      EltFloat  -> label (show e <> " Storage") $
+        genericGetVectorWith (label "Length" get) (label "Float" getFloatbe)
+      EltDouble -> label (show e <> " Storage") $
+        genericGetVectorWith (label "Length" get) (label "Double" getDoublebe)
+      _         -> get
 
 fromList
   :: (KnownElt e, Storable e)
