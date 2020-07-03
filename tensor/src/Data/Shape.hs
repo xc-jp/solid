@@ -40,9 +40,10 @@ unifyShapes
   :: Shape
   -> Shape
   -> Either String Shape
-unifyShapes (Shape da ba) (Shape db bb) = Shape da <$>
+unifyShapes sa@(Shape da ba) sb@(Shape db bb) = Shape da <$>
   case (ba,bb) of
-    _ | da /= db -> Left "Dimensions differ"
+    _ | da /= db -> Left $ unwords
+        [ "Cannot unify shapes ", show sa , "and", show sb <> "; different dimensions" ]
     (Just b,Just b')
       | b /= b' -> Left "Batches differ"
       | otherwise -> pure $ Just b
