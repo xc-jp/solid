@@ -9,8 +9,8 @@ module Tensor.Storable
   , Tensor (..)
   , tensorDims
   , tensorElt
-  , fromTensorList
-  , toTensorList
+  , fromTensorList , toTensorList
+  , fromUnboxed, toUnboxed
   , fromList
   , fromListFail
   , singleton
@@ -44,8 +44,10 @@ import           Data.Vector.Binary   (genericGetVectorWith,
                                        genericPutVectorWith)
 import           Data.Vector.Storable (Storable, Vector)
 import qualified Data.Vector.Storable as V
+import qualified Data.Vector.Unboxed
 import           Tensor.Common
 
+type UTensor = Tensor Data.Vector.Unboxed.Vector
 type STensor = Tensor Vector
 
 instance Show STensor where
@@ -102,6 +104,30 @@ toTensorList
   -> Tensor []
 toTensorList (Tensor dims elt es) = withStorableElt elt $
   Tensor dims elt (V.toList es)
+
+fromUnboxed :: UTensor -> STensor
+fromUnboxed (Tensor dims elt@EltFloat es)  = Tensor dims elt (V.convert es)
+fromUnboxed (Tensor dims elt@EltDouble es) = Tensor dims elt (V.convert es)
+fromUnboxed (Tensor dims elt@EltInt8 es)   = Tensor dims elt (V.convert es)
+fromUnboxed (Tensor dims elt@EltInt16 es)  = Tensor dims elt (V.convert es)
+fromUnboxed (Tensor dims elt@EltInt32 es)  = Tensor dims elt (V.convert es)
+fromUnboxed (Tensor dims elt@EltInt64 es)  = Tensor dims elt (V.convert es)
+fromUnboxed (Tensor dims elt@EltWord8 es)  = Tensor dims elt (V.convert es)
+fromUnboxed (Tensor dims elt@EltWord16 es) = Tensor dims elt (V.convert es)
+fromUnboxed (Tensor dims elt@EltWord32 es) = Tensor dims elt (V.convert es)
+fromUnboxed (Tensor dims elt@EltWord64 es) = Tensor dims elt (V.convert es)
+
+toUnboxed :: STensor -> UTensor
+toUnboxed (Tensor dims elt@EltFloat es)  = Tensor dims elt (V.convert es)
+toUnboxed (Tensor dims elt@EltDouble es) = Tensor dims elt (V.convert es)
+toUnboxed (Tensor dims elt@EltInt8 es)   = Tensor dims elt (V.convert es)
+toUnboxed (Tensor dims elt@EltInt16 es)  = Tensor dims elt (V.convert es)
+toUnboxed (Tensor dims elt@EltInt32 es)  = Tensor dims elt (V.convert es)
+toUnboxed (Tensor dims elt@EltInt64 es)  = Tensor dims elt (V.convert es)
+toUnboxed (Tensor dims elt@EltWord8 es)  = Tensor dims elt (V.convert es)
+toUnboxed (Tensor dims elt@EltWord16 es) = Tensor dims elt (V.convert es)
+toUnboxed (Tensor dims elt@EltWord32 es) = Tensor dims elt (V.convert es)
+toUnboxed (Tensor dims elt@EltWord64 es) = Tensor dims elt (V.convert es)
 
 unfold
   :: (Storable e, KnownElt e)
