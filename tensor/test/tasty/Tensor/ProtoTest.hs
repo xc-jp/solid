@@ -11,7 +11,9 @@ tests = do
     it "fromList: bigger declared Dims than size of list." $
       fromList [5, 2] [(1 :: Float) .. 4] `shouldBe` Nothing
     it "fromList: lesser declared Dims than size of list." $
-      fromList [3, 2] [(1 :: Float) .. 5] `shouldBe` Nothing
+      let val = fromList [3, 2] [(1 :: Float) .. 7]
+          target = Tensor [3,2] EltFloat [1 .. 6]
+      in val `shouldBe` (Just target)
     it "fromList: correct Dims for passed list." $
       let val = fromList [2, 2] [(1 :: Float) .. 4]
           target = Tensor [2, 2] EltFloat [(1 :: Float), 2, 3, 4]
