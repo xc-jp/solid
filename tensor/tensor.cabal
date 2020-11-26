@@ -40,3 +40,17 @@ library
     , vector-binary-instances
 
   ghc-options:      -Wall -Wno-name-shadowing
+
+test-suite tasty
+  type:             exitcode-stdio-1.0
+  hs-source-dirs:   test/tasty
+  other-modules:    Tensor.ProtoTest
+  build-depends:
+      base
+    , tasty
+    , tasty-hspec
+    , tensor
+
+  main-is:          Main.hs
+  default-language: Haskell2010
+  ghc-options:      -Wall -Wno-name-shadowing
