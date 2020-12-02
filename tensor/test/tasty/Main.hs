@@ -1,8 +1,8 @@
 module Main (main) where
 
 import qualified Tensor.ProtoTest
-import Test.Tasty
-import Test.Tasty.Hspec
+import           Test.Tasty
+import           Test.Tasty.Hspec
 
 main :: IO ()
 main = do
