@@ -1,4 +1,5 @@
 {-# LANGUAGE ConstraintKinds #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE QuantifiedConstraints #-}
@@ -25,6 +26,7 @@ module Tensor.Common
   )
 where
 
+import Control.DeepSeq (NFData (rnf))
 import Control.Monad.Random
   ( MonadRandom,
     Random,
@@ -37,8 +39,12 @@ import Data.Positive
 import Data.Shape
 import Data.Some
 import Data.Type.Equality
+import qualified Data.Vector.Storable as SVec
 
 data Tensor v where Tensor :: Dims -> Elt e -> v e -> Tensor v
+
+instance NFData (Tensor SVec.Vector) where
+  rnf (Tensor dims elt vec) = seq dims $! seq elt $! rnf vec
 
 tensorDims :: Tensor v -> Dims
 tensorDims (Tensor dims _ _) = dims
