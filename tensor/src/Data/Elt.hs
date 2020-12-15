@@ -13,7 +13,6 @@ module Data.Elt
   , withEqElt
   , withAEqElt
   , withOrdElt
-  , withBinaryElt
   , withStorableElt
   , maybeFloatingElt
   , equalElt
@@ -22,7 +21,6 @@ module Data.Elt
   ) where
 
 import           Data.AEq                  (AEq)
-import           Data.Binary
 import           Data.Char                 (toLower)
 import           Data.GADT.Compare
 import           Data.GADT.Show
@@ -31,6 +29,7 @@ import           Data.Some
 import           Data.Text.Prettyprint.Doc (Pretty (..))
 import           Data.Type.Equality
 import           Data.Vector.Storable      (Storable)
+import           Data.Word                 (Word16, Word32, Word64, Word8)
 import           GHC.Generics
 import           System.Random             (Random)
 
@@ -69,8 +68,6 @@ data EltTag
   | Word64Tag
   deriving (Generic)
 
-instance Binary EltTag
-
 instance Generic (Some Elt) where
   type Rep (Some Elt) = Rec0 EltTag
   from (Some EltFloat)  = K1 FloatTag
@@ -93,8 +90,6 @@ instance Generic (Some Elt) where
   to (K1 Word16Tag) = Some EltWord16
   to (K1 Word32Tag) = Some EltWord32
   to (K1 Word64Tag) = Some EltWord64
-
-instance Binary (Some Elt)
 
 -- Avoid catch-all case to enable exhaustiveness checking for this
 -- instance.
@@ -224,19 +219,6 @@ withOrdElt EltWord32 = id
 withOrdElt EltInt64  = id
 withOrdElt EltWord64 = id
 {-# INLINE withOrdElt #-}
-
-withBinaryElt :: Elt e -> (Binary e => r) -> r
-withBinaryElt EltFloat  = id
-withBinaryElt EltDouble = id
-withBinaryElt EltInt8   = id
-withBinaryElt EltWord8  = id
-withBinaryElt EltInt16  = id
-withBinaryElt EltWord16 = id
-withBinaryElt EltInt32  = id
-withBinaryElt EltWord32 = id
-withBinaryElt EltInt64  = id
-withBinaryElt EltWord64 = id
-{-# INLINE withBinaryElt #-}
 
 withStorableElt :: Elt e -> (Storable e => r) -> r
 withStorableElt EltFloat  = id

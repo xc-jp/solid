@@ -10,7 +10,6 @@ module Data.Shape
 where
 
 import           Control.Monad             (guard)
-import           Data.Binary
 import           Data.Positive
 import           Data.Text.Prettyprint.Doc
 import           GHC.Generics              (Generic)
@@ -27,8 +26,6 @@ data Shape = Shape
   , shBatch :: Maybe Positive
   }
   deriving (Eq, Show, Generic)
-
-instance Binary Shape
 
 instance Pretty Shape where
   pretty (Shape dims b) = concatWith (\x y -> x <> pretty "×" <> y) (prettyBatch b : fmap pretty (reverse dims))
