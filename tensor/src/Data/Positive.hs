@@ -3,7 +3,6 @@ module Data.Positive where
 
 import           Control.Exception
 import           Data.Aeson
-import           Data.Binary
 import           Data.Data
 import           Data.Ratio
 import           Data.Text.Prettyprint.Doc
@@ -17,10 +16,6 @@ instance Pretty Positive where
 
 instance Show Positive where
   showsPrec d (Positive n) = showsPrec d n
-
-instance Binary Positive where
-  put (Positive n) = put n
-  get = Positive <$> get
 
 instance FromJSON Positive where
   parseJSON v = do

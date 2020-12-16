@@ -30,14 +30,12 @@ library
   build-depends:
       aeson
     , base
-    , binary
     , ieee754
     , MonadRandom
     , prettyprinter
     , random
     , some
     , vector
-    , vector-binary-instances
 
   ghc-options:      -Wall -Wno-name-shadowing
 
