@@ -173,8 +173,9 @@ msra
   -> Dims
   -> Elt e
   -> m STensor
-msra fanIn dims elt = Tensor dims elt <$>
-  V.replicateM (dimsSize dims) (genMSRA fanIn)
+msra fanIn dims elt = do
+  values <- V.replicateM (dimsSize dims) (genMSRA fanIn)
+  values `seq` pure (Tensor dims elt values)
 
 meanVar
   :: STensor

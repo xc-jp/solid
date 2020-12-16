@@ -131,7 +131,7 @@ genNormal
 genNormal mean std = do
   u1 <- getRandom
   u2 <- getRandom
-  pure $ sqrt (-2 * log u1) * cos (2 * pi * u2) * std + mean
+  pure $! sqrt (-2 * log u1) * cos (2 * pi * u2) * std + mean
 
 genXavier :: (Random e, MonadRandom m, Floating e)
   => Positive -- ^ fan-in size
