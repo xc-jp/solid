@@ -1,9 +1,9 @@
 module Tensor.ProtoTest (tests) where
 
-import           Data.Elt
-import           Tensor.Common
-import           Tensor.List
-import           Test.Tasty.Hspec
+import Data.Elt
+import Tensor.Common
+import Tensor.List
+import Test.Tasty.Hspec
 
 tests :: Spec
 tests = do

@@ -1,12 +1,13 @@
 {-# LANGUAGE DeriveDataTypeable #-}
+
 module Data.Positive where
 
-import           Control.Exception
-import           Data.Aeson
-import           Data.Data
-import           Data.Ratio
-import           Data.Text.Prettyprint.Doc
-import           Numeric.Natural
+import Control.Exception
+import Data.Aeson
+import Data.Data
+import Data.Ratio
+import Data.Text.Prettyprint.Doc
+import Numeric.Natural
 
 newtype Positive = Positive Natural
   deriving (Eq, Ord, Data)
@@ -48,7 +49,7 @@ instance Integral Positive where
   div (Positive x) (Positive y) = Positive (x `div` y)
   quot (Positive x) (Positive y) = Positive (x `quot` y)
   quotRem (Positive x) (Positive y) =
-    let (q,r) = quotRem x y in (fromIntegral q, fromIntegral r)
+    let (q, r) = quotRem x y in (fromIntegral q, fromIntegral r)
   toInteger (Positive x) = toInteger x
 
 -- | Necessary because @(fromIntegral n) + p@ should be safe, but errors because of possible intermediate @Positive 0@.
