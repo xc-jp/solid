@@ -1,5 +1,4 @@
 {-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE LambdaCase #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Tensor.List
@@ -46,7 +45,7 @@ fromList dims e = Tensor dims knownElt <$> takeExact (dimsSize dims) e
     takeExact n (e : es) = (e :) <$> takeExact (n -1) es
     takeExact _ _ = Nothing
 
-fromListFail :: (MonadFail m, KnownElt e) => Dims -> [e] -> m (LTensor)
+fromListFail :: (MonadFail m, KnownElt e) => Dims -> [e] -> m LTensor
 fromListFail dims = maybe (fail "fromListM: list too short") pure . fromList dims
 
 -- | Construct a tensor from an infinite list

@@ -95,8 +95,7 @@ toDims z (x :. xs) = x : toDims z xs
 
 -- | Convert 'Dims' to known size 'Shape'
 fromDims :: Dims -> Shape
-fromDims [] = Z
-fromDims (x : xs) = x :. fromDims xs
+fromDims = foldr (:.) Z
 
 -- | Prefix a shape with inner-most dimensions
 -- Example:
