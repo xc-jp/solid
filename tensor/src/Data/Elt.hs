@@ -15,6 +15,7 @@ module Data.Elt
     withAEqElt,
     withOrdElt,
     withStorableElt,
+    withUnboxElt,
     maybeFloatingElt,
     equalElt,
     Some (..),
@@ -33,6 +34,7 @@ import Data.Some
 import Data.Text.Prettyprint.Doc (Pretty (..))
 import Data.Type.Equality
 import Data.Vector.Storable (Storable)
+import Data.Vector.Unboxed (Unbox)
 import Data.Word (Word16, Word32, Word64, Word8)
 import GHC.Generics
 import System.Random (Random)
@@ -289,3 +291,16 @@ withAEqElt EltWord32 = id
 withAEqElt EltInt64 = id
 withAEqElt EltWord64 = id
 {-# INLINE withAEqElt #-}
+
+withUnboxElt :: Elt e -> (Unbox e => r) -> r
+withUnboxElt EltFloat = id
+withUnboxElt EltDouble = id
+withUnboxElt EltInt8 = id
+withUnboxElt EltInt16 = id
+withUnboxElt EltInt32 = id
+withUnboxElt EltInt64 = id
+withUnboxElt EltWord8 = id
+withUnboxElt EltWord16 = id
+withUnboxElt EltWord32 = id
+withUnboxElt EltWord64 = id
+{-# INLINE withUnboxElt #-}
