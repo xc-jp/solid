@@ -30,6 +30,7 @@ library
   build-depends:
       aeson
     , base
+    , deepseq
     , ieee754
     , MonadRandom
     , prettyprinter
