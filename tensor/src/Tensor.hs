@@ -16,12 +16,18 @@ module Tensor
     Dynamic (..),
     dynamic,
     dynamic',
-    Proxy (..),
+    hmapDynamic,
+    htraverseDynamic,
     Identity (..),
-    pattern EltFloat,
-    pattern EltInt,
     pattern IFloat,
     pattern IInt,
+
+    -- * Elt
+    Elt,
+    dynElt,
+    pattern EltFloat,
+    pattern EltInt,
+    Proxy (..),
 
     -- * Dims
     Positive,
@@ -53,7 +59,20 @@ dynamic' :: (forall a. f a -> r) -> (Dynamic f -> r)
 dynamic' f (DFloat v) = f v
 dynamic' f (DInt v) = f v
 
-pattern EltFloat, EltInt :: Dynamic Proxy
+hmapDynamic :: (forall a. f a -> g a) -> Dynamic f -> Dynamic g
+hmapDynamic f (DFloat v) = DFloat $ f v
+hmapDynamic f (DInt v) = DInt $ f v
+
+htraverseDynamic :: Functor m => (forall a. f a -> m (g a)) -> Dynamic f -> m (Dynamic g)
+htraverseDynamic f (DFloat v) = DFloat <$> f v
+htraverseDynamic f (DInt v) = DInt <$> f v
+
+type Elt = Dynamic Proxy
+
+dynElt :: Dynamic f -> Elt
+dynElt = hmapDynamic (const Proxy)
+
+pattern EltFloat, EltInt :: Elt
 pattern EltFloat = DFloat Proxy
 pattern EltInt = DInt Proxy
 
