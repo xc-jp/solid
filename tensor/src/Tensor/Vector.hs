@@ -5,7 +5,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
-module Tensor.Storable
+module Tensor.Vector
   ( STensor,
     UTensor,
     VTensor,
