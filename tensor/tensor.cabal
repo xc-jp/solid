@@ -21,7 +21,6 @@ library
     Data.Shape
     Tensor.Common
     Tensor.List
-    Tensor.Proxy
     Tensor.Vector
 
   default-language: Haskell2010

@@ -60,11 +60,7 @@ dynamic :: (f Float -> r) -> (f Int -> r) -> (Dynamic f -> r)
 dynamic f _ (DFloat v) = f v
 dynamic _ f (DInt v) = f v
 
-genNormal ::
-  (MonadRandom m, Random e, Floating e) =>
-  e ->
-  e ->
-  m e
+genNormal :: (MonadRandom m, Random e, Floating e) => e -> e -> m e
 genNormal mean std = do
   u1 <- getRandom
   u2 <- getRandom
