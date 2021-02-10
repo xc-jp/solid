@@ -1,0 +1,123 @@
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE GADTs #-}
+{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# OPTIONS_GHC -fno-warn-orphans #-}
+
+module Tensor.Storable
+  ( STensor,
+    UTensor,
+    VTensor,
+    Tensor (..),
+    fromTensorList,
+    toTensorList,
+    convert,
+    fromList,
+    fromListFail,
+    singleton,
+    map,
+    fill,
+    fillM,
+    normal,
+    xavier,
+    xavier',
+    msra,
+    normalize,
+    meanVar,
+  )
+where
+
+import Control.Monad
+import Control.Monad.Fail (MonadFail)
+import Control.Monad.Random (MonadRandom, Random)
+import Data.Positive
+import Data.Shape
+import qualified Data.Vector as VV
+import qualified Data.Vector.Generic as VG
+import qualified Data.Vector.Storable as VS
+import qualified Data.Vector.Unboxed as VU
+import Lens.Micro
+import Tensor.Common
+import Prelude hiding (map)
+
+type UTensor = Tensor VU.Vector
+
+type STensor = Tensor VS.Vector
+
+type VTensor = Tensor VV.Vector
+
+fromList :: VG.Vector v e => Dims -> [e] -> Maybe (Tensor v e)
+fromList dims es = if VG.length v == n then pure (Tensor dims v) else Nothing
+  where
+    n = dimsSize dims
+    v = VG.fromListN n es
+
+fromListFail :: (VG.Vector v e, MonadFail m) => Dims -> [e] -> m (Tensor v e)
+fromListFail dims es = maybe (fail "fromListFail: list too short") pure $ fromList dims es
+
+singleton :: VG.Vector v a => a -> Tensor v a
+singleton = Tensor [] . VG.singleton
+
+fromTensorList :: VG.Vector v a => Tensor [] a -> Tensor v a
+fromTensorList = over tensorDataL VG.fromList
+
+toTensorList :: VG.Vector v e => Tensor v e -> Tensor [] e
+toTensorList = over tensorDataL VG.toList
+
+convert :: (VG.Vector v a, VG.Vector w a) => Tensor v a -> Tensor w a
+convert = over tensorDataL VG.convert
+
+fill :: VG.Vector v e => Dims -> e -> Tensor v e
+fill dims e = Tensor dims (VG.replicate (dimsSize dims) e)
+
+fillM :: (Monad m, VG.Vector v e) => m e -> Dims -> m (Tensor v e)
+fillM gen dims = Tensor dims <$> VG.replicateM (dimsSize dims) gen
+
+normal ::
+  (VG.Vector v e, MonadRandom m, Random e, Floating e) =>
+  e ->
+  e ->
+  Dims ->
+  m (Tensor v e)
+normal mean std = fillM (genNormal mean std)
+
+xavier ::
+  (VG.Vector v e, MonadRandom m, Random e, Floating e) =>
+  Positive ->
+  Positive ->
+  Dims ->
+  m (Tensor v e)
+xavier fanIn fanOut = fillM (genXavier fanIn fanOut)
+
+xavier' :: (VG.Vector v e, MonadRandom m, Random e, Floating e) => Positive -> Dims -> m (Tensor v e)
+xavier' fanIn = fillM (genXavierFanIn fanIn)
+
+msra ::
+  (VG.Vector v e, MonadRandom m, Random e, Floating e) =>
+  Positive ->
+  Dims ->
+  m (Tensor v e)
+msra fanIn = fillM (genMSRA fanIn)
+
+map :: (VG.Vector v a, VG.Vector v b) => (a -> b) -> Tensor v a -> Tensor v b
+map = over tensorDataL . VG.map
+
+meanVar ::
+  (Real e, VG.Vector v Double, VG.Vector v e) =>
+  Tensor v e ->
+  (Double, Double)
+meanVar (Tensor _ v) =
+  let mean v = VG.sum v / realToFrac (VG.length v)
+      vDouble = VG.map realToFrac v
+      u = mean vDouble
+      var = mean $ VG.map (\x -> let d = x - u in d * d) vDouble
+   in (u, var)
+
+-- | Normalizes a tensor of floating values to the 0-1 range
+normalize :: (Ord e, Fractional e, VG.Vector v e) => Tensor v e -> Tensor v e
+normalize (Tensor dims xs) =
+  let min' = VG.minimum xs
+      max' = VG.maximum xs
+      epsilon = 1e-11
+   in Tensor dims (VG.map (\x -> (x - min') / (max' - min' + epsilon)) xs)

@@ -4,10 +4,10 @@
 module Tensor.Common
   ( -- * Tensor
     Tensor (..),
-    tensorShowPrec,
     tensorPut,
     tensorGet,
     tensorDataL,
+    tensorDimsL,
 
     -- * Dynamic
     Dynamic (..),
@@ -28,6 +28,7 @@ import Data.AEq
 import Data.Positive
 import Data.Shape
 import GHC.Generics
+import Lens.Micro
 
 data Tensor v e = Tensor
   { tensorDims :: Dims,
@@ -45,15 +46,12 @@ tensorPut putDims putV (Tensor d v) = putDims d <> putV v
 tensorGet :: Monad m => m Dims -> m (v e) -> m (Tensor v e)
 tensorGet = liftA2 Tensor
 
-tensorShowPrec :: (Int -> v e -> ShowS) -> Int -> Tensor v e -> ShowS
-tensorShowPrec f d (Tensor dims vs) =
-  showParen (d > 10) $
-    shows dims
-      . showChar ' '
-      . showChar ' '
-      . f 10 vs
+tensorDimsL :: Lens' (Tensor v a) Dims
+tensorDimsL f (Tensor ds v) = flip Tensor v <$> f ds
 
-tensorDataL :: Functor f => (v a -> f (w a)) -> (Tensor v a -> f (Tensor w a))
+-- | Change the base of the tensor.
+-- This is unsafe since we don't check if the result has the same number of elements
+tensorDataL :: Lens (Tensor v a) (Tensor w b) (v a) (w b)
 tensorDataL f (Tensor sh v) = Tensor sh <$> f v
 
 data Dynamic f = DFloat (f Float) | DInt (f Int)
