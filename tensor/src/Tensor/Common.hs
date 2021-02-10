@@ -1,12 +1,19 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveTraversable #-}
 
 module Tensor.Common
-  ( Tensor (..),
+  ( -- * Tensor
+    Tensor (..),
     tensorShowPrec,
-    tensorTrans,
-    tensorTransM,
     tensorPut,
     tensorGet,
+    tensorDataL,
+
+    -- * Dynamic
+    Dynamic (..),
+    dynamic,
+
+    -- * Random generators
     genNormal,
     genXavier,
     genXavierFanIn,
@@ -16,12 +23,7 @@ where
 
 import Control.Applicative
 import Control.DeepSeq (NFData)
-import Control.Monad.Random
-  ( MonadRandom,
-    Random,
-    getRandom,
-    getRandomR,
-  )
+import Control.Monad.Random (MonadRandom, Random, getRandom, getRandomR)
 import Data.AEq
 import Data.Positive
 import Data.Shape
@@ -31,31 +33,19 @@ data Tensor v e = Tensor
   { tensorDims :: Dims,
     tensorData :: v e
   }
-  deriving (Eq, Show, Generic)
+  deriving (Eq, Show, Generic, Functor, Foldable, Traversable)
 
 instance NFData (v e) => NFData (Tensor v e)
 
 instance Eq (v e) => AEq (Tensor v e)
 
-tensorPut ::
-  Monoid m =>
-  (Dims -> m) ->
-  (v e -> m) ->
-  (Tensor v e -> m)
+tensorPut :: Monoid m => (Dims -> m) -> (v e -> m) -> (Tensor v e -> m)
 tensorPut putDims putV (Tensor d v) = putDims d <> putV v
 
-tensorGet ::
-  Monad m =>
-  m Dims ->
-  m (v e) ->
-  m (Tensor v e)
+tensorGet :: Monad m => m Dims -> m (v e) -> m (Tensor v e)
 tensorGet = liftA2 Tensor
 
-tensorShowPrec ::
-  (Int -> v e -> ShowS) ->
-  Int ->
-  Tensor v e ->
-  ShowS
+tensorShowPrec :: (Int -> v e -> ShowS) -> Int -> Tensor v e -> ShowS
 tensorShowPrec f d (Tensor dims vs) =
   showParen (d > 10) $
     shows dims
@@ -63,17 +53,14 @@ tensorShowPrec f d (Tensor dims vs) =
       . showChar ' '
       . f 10 vs
 
--- TODO Lenses, traversals
+tensorDataL :: Functor f => (v a -> f (w a)) -> (Tensor v a -> f (Tensor w a))
+tensorDataL f (Tensor sh v) = Tensor sh <$> f v
 
-tensorTrans ::
-  (v e -> w e) ->
-  Tensor v e ->
-  Tensor w e
-tensorTrans f (Tensor sh v) = Tensor sh (f v)
+data Dynamic f = DFloat (f Float) | DInt (f Int)
 
--- FIXME actually this is the lens
-tensorTransM :: Functor f => (v a -> f (w a)) -> (Tensor v a -> f (Tensor w a))
-tensorTransM f (Tensor sh v) = Tensor sh <$> f v
+dynamic :: (f Float -> r) -> (f Int -> r) -> (Dynamic f -> r)
+dynamic f _ (DFloat v) = f v
+dynamic _ f (DInt v) = f v
 
 genNormal ::
   (MonadRandom m, Random e, Floating e) =>
