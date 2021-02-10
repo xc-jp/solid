@@ -1,18 +1,7 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
-module Tensor.List
-  ( LTensor,
-    Tensor (..),
-    fromList,
-    fromListFail,
-    fill,
-    fillM,
-    normal,
-    xavier,
-    normalize,
-  )
-where
+module Tensor.List where
 
 import Control.Monad
 import Control.Monad.Fail (MonadFail)

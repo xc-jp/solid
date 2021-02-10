@@ -5,28 +5,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
-module Tensor.Vector
-  ( STensor,
-    UTensor,
-    VTensor,
-    Tensor (..),
-    fromTensorList,
-    toTensorList,
-    convert,
-    fromList,
-    fromListFail,
-    singleton,
-    map,
-    fill,
-    fillM,
-    normal,
-    xavier,
-    xavier',
-    msra,
-    normalize,
-    meanVar,
-  )
-where
+module Tensor.Vector where
 
 import Control.Monad
 import Control.Monad.Fail (MonadFail)

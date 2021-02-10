@@ -9,10 +9,6 @@ module Tensor.Common
     tensorDataL,
     tensorDimsL,
 
-    -- * Dynamic
-    Dynamic (..),
-    dynamic,
-
     -- * Random generators
     genNormal,
     genXavier,
@@ -53,12 +49,6 @@ tensorDimsL f (Tensor ds v) = flip Tensor v <$> f ds
 -- This is unsafe since we don't check if the result has the same number of elements
 tensorDataL :: Lens (Tensor v a) (Tensor w b) (v a) (w b)
 tensorDataL f (Tensor sh v) = Tensor sh <$> f v
-
-data Dynamic f = DFloat (f Float) | DInt (f Int)
-
-dynamic :: (f Float -> r) -> (f Int -> r) -> (Dynamic f -> r)
-dynamic f _ (DFloat v) = f v
-dynamic _ f (DInt v) = f v
 
 genNormal :: (MonadRandom m, Random e, Floating e) => e -> e -> m e
 genNormal mean std = do

@@ -19,6 +19,7 @@ library
   exposed-modules:
     Data.Positive
     Data.Shape
+    Tensor
     Tensor.Common
     Tensor.List
     Tensor.Vector
