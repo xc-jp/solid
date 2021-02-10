@@ -18,9 +18,15 @@ module Tensor
     dynamic',
     hmapDynamic,
     htraverseDynamic,
+    DSTensor,
+    DUTensor,
+    DVTensor,
+    DLTensor,
+
+    -- * Scalar
     Identity (..),
-    pattern IFloat,
-    pattern IInt,
+    pattern SFloat,
+    pattern SInt,
 
     -- * Elt
     Elt,
@@ -67,6 +73,14 @@ htraverseDynamic :: Functor m => (forall a. f a -> m (g a)) -> Dynamic f -> m (D
 htraverseDynamic f (DFloat v) = DFloat <$> f v
 htraverseDynamic f (DInt v) = DInt <$> f v
 
+type DSTensor = Dynamic STensor
+
+type DLTensor = Dynamic LTensor
+
+type DUTensor = Dynamic UTensor
+
+type DVTensor = Dynamic VTensor
+
 type Elt = Dynamic Proxy
 
 dynElt :: Dynamic f -> Elt
@@ -76,8 +90,10 @@ pattern EltFloat, EltInt :: Elt
 pattern EltFloat = DFloat Proxy
 pattern EltInt = DInt Proxy
 
-pattern IFloat :: Float -> Dynamic Identity
-pattern IFloat f = DFloat (Identity f)
+type Scalar = Dynamic Identity
 
-pattern IInt :: Int -> Dynamic Identity
-pattern IInt f = DInt (Identity f)
+pattern SFloat :: Float -> Scalar
+pattern SFloat f = DFloat (Identity f)
+
+pattern SInt :: Int -> Scalar
+pattern SInt f = DInt (Identity f)
