@@ -1,20 +1,8 @@
-{-# LANGUAGE ConstraintKinds #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE GADTs #-}
-{-# LANGUAGE QuantifiedConstraints #-}
-{-# LANGUAGE RankNTypes #-}
-{-# LANGUAGE TupleSections #-}
+{-# LANGUAGE DeriveGeneric #-}
 
 module Tensor.Common
   ( Tensor (..),
-    tensorDims,
-    tensorElt,
-    tensorEq,
-    tensorAEq,
     tensorShowPrec,
-    tensorUnfold,
-    tensorUnfoldM,
     tensorTrans,
     tensorTransM,
     tensorPut,
@@ -26,7 +14,8 @@ module Tensor.Common
   )
 where
 
-import Control.DeepSeq (NFData (rnf))
+import Control.Applicative
+import Control.DeepSeq (NFData)
 import Control.Monad.Random
   ( MonadRandom,
     Random,
@@ -34,113 +23,57 @@ import Control.Monad.Random
     getRandomR,
   )
 import Data.AEq
-import Data.Elt
 import Data.Positive
 import Data.Shape
-import Data.Some
-import Data.Type.Equality
-import qualified Data.Vector.Storable as SVec
+import GHC.Generics
 
-data Tensor v where Tensor :: Dims -> Elt e -> v e -> Tensor v
+data Tensor v e = Tensor
+  { tensorDims :: Dims,
+    tensorData :: v e
+  }
+  deriving (Eq, Show, Generic)
 
-instance NFData (Tensor SVec.Vector) where
-  rnf (Tensor dims elt vec) = seq dims $! seq elt $! rnf vec
+instance NFData (v e) => NFData (Tensor v e)
 
-tensorDims :: Tensor v -> Dims
-tensorDims (Tensor dims _ _) = dims
-
-tensorElt :: Tensor v -> Some Elt
-tensorElt (Tensor _ elt _) = Some elt
+instance Eq (v e) => AEq (Tensor v e)
 
 tensorPut ::
   Monoid m =>
   (Dims -> m) ->
-  (Some Elt -> m) ->
-  (forall e. Elt e -> v e -> m) ->
-  (Tensor v -> m)
-tensorPut putDims putElt putV (Tensor d e v) = putDims d <> putElt (Some e) <> putV e v
+  (v e -> m) ->
+  (Tensor v e -> m)
+tensorPut putDims putV (Tensor d v) = putDims d <> putV v
 
 tensorGet ::
   Monad m =>
   m Dims ->
-  m (Some Elt) ->
-  (forall e. Elt e -> m (v e)) ->
-  m (Tensor v)
-tensorGet getDims getElt getV = do
-  dims <- getDims
-  selt <- getElt
-  withSome selt $ \elt -> Tensor dims elt <$> getV elt
-
-tensorEq ::
-  (forall e. Eq e => Elt e -> v e -> v e -> r) ->
-  r ->
-  Tensor v ->
-  Tensor v ->
-  r
-tensorEq comp r0 (Tensor sa ea va) (Tensor sb eb vb)
-  | sa == sb,
-    Just Refl <- testEquality ea eb =
-    withEqElt ea $ comp ea va vb
-  | otherwise = r0
-
-tensorAEq ::
-  (forall e. AEq e => Elt e -> v e -> v e -> r) ->
-  r ->
-  Tensor v ->
-  Tensor v ->
-  r
-tensorAEq comp r0 (Tensor sa ea va) (Tensor sb eb vb)
-  | sa == sb,
-    Just Refl <- testEquality ea eb =
-    withAEqElt ea $ comp ea va vb
-  | otherwise = r0
+  m (v e) ->
+  m (Tensor v e)
+tensorGet = liftA2 Tensor
 
 tensorShowPrec ::
-  (forall e. Show e => Elt e -> Int -> v e -> ShowS) ->
+  (Int -> v e -> ShowS) ->
   Int ->
-  Tensor v ->
+  Tensor v e ->
   ShowS
-tensorShowPrec f d (Tensor dims elt vs) =
-  withShowElt elt $
-    showParen (d > 10) $
-      shows dims
-        . showChar ' '
-        . showParen True (shows elt)
-        . showChar ' '
-        . f elt 10 vs
+tensorShowPrec f d (Tensor dims vs) =
+  showParen (d > 10) $
+    shows dims
+      . showChar ' '
+      . showChar ' '
+      . f 10 vs
+
+-- TODO Lenses, traversals
 
 tensorTrans ::
-  (forall a. Elt a -> v a -> w a) ->
-  Tensor v ->
-  Tensor w
-tensorTrans f (Tensor sh elt v) = Tensor sh elt (f elt v)
+  (v e -> w e) ->
+  Tensor v e ->
+  Tensor w e
+tensorTrans f (Tensor sh v) = Tensor sh (f v)
 
-tensorTransM ::
-  Functor m =>
-  (forall a. Elt a -> v a -> m (w a)) ->
-  Tensor v ->
-  m (Tensor w)
-tensorTransM f (Tensor sh elt v) = Tensor sh elt <$> f elt v
-
-tensorUnfold ::
-  KnownElt e =>
-  (forall g. (g -> Maybe (e, g)) -> g -> v e) ->
-  Dims ->
-  (forall g. (g -> (e, g)) -> g -> Tensor v)
-tensorUnfold unfoldr dims fg g0 = Tensor dims knownElt $ unfoldr fg' (dimsSize dims, g0)
-  where
-    fg' (0, _) = Nothing
-    fg' (n, g) = Just . fmap (pred n,) $ fg g
-
-tensorUnfoldM ::
-  (Monad m, KnownElt e) =>
-  (forall g. (g -> m (Maybe (e, g))) -> g -> m (v e)) ->
-  Dims ->
-  (forall g. (g -> m (e, g)) -> g -> m (Tensor v))
-tensorUnfoldM unfoldr dims fg g0 = Tensor dims knownElt <$> unfoldr fg' (dimsSize dims, g0)
-  where
-    fg' (0, _) = pure Nothing
-    fg' (n, g) = Just . fmap (pred n,) <$> fg g
+-- FIXME actually this is the lens
+tensorTransM :: Functor f => (v a -> f (w a)) -> (Tensor v a -> f (Tensor w a))
+tensorTransM f (Tensor sh v) = Tensor sh <$> f v
 
 genNormal ::
   (MonadRandom m, Random e, Floating e) =>
