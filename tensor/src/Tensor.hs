@@ -11,6 +11,8 @@ module Tensor
     VTensor,
     UTensor,
     LTensor,
+    Unbox,
+    Storable,
 
     -- * Dynamic
     Dynamic (..),
@@ -90,7 +92,7 @@ withDynamic :: Dynamic f -> (forall a. (Num a, Ord a, Storable a, Unbox a) => f 
 withDynamic (DFloat v) f = f v
 withDynamic (DInt v) f = f v
 
-hmapDynamic :: (forall a. f a -> g a) -> Dynamic f -> Dynamic g
+hmapDynamic :: (forall a. (Num a, Ord a, Storable a, Unbox a) => f a -> g a) -> Dynamic f -> Dynamic g
 hmapDynamic f (DFloat v) = DFloat $ f v
 hmapDynamic f (DInt v) = DInt $ f v
 
@@ -102,7 +104,11 @@ bimapDynamic_ :: f Float -> f Int -> Dynamic g -> Dynamic f
 bimapDynamic_ r _ (DFloat _) = DFloat r
 bimapDynamic_ _ r (DInt _) = DInt r
 
-htraverseDynamic :: Functor m => (forall a. f a -> m (g a)) -> Dynamic f -> m (Dynamic g)
+htraverseDynamic ::
+  Functor m =>
+  (forall a. (Num a, Ord a, Storable a, Unbox a) => f a -> m (g a)) ->
+  Dynamic f ->
+  m (Dynamic g)
 htraverseDynamic f (DFloat v) = DFloat <$> f v
 htraverseDynamic f (DInt v) = DInt <$> f v
 
