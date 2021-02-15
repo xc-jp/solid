@@ -16,6 +16,7 @@ module Tensor
     Dynamic (..),
     dynamic,
     dynamic',
+    withDynamic,
     dynamic_,
     bimapDynamic,
     bimapDynamic_,
@@ -52,6 +53,8 @@ import Data.Functor.Identity
 import Data.Positive
 import Data.Proxy
 import Data.Shape as Sh
+import Data.Vector.Storable (Storable)
+import Data.Vector.Unboxed (Unbox)
 import GHC.Generics
 import Tensor.Common as TC
 import Tensor.List as TL
@@ -78,9 +81,14 @@ dynamic_ :: r -> r -> (Dynamic f -> r)
 dynamic_ r _ (DFloat _) = r
 dynamic_ _ r (DInt _) = r
 
-dynamic' :: (forall a. f a -> r) -> (Dynamic f -> r)
+dynamic' :: (forall a. (Num a, Ord a, Storable a, Unbox a) => f a -> r) -> (Dynamic f -> r)
 dynamic' f (DFloat v) = f v
 dynamic' f (DInt v) = f v
+
+-- | Just a flipped version of dynamic' because GHC doesn't like flip
+withDynamic :: Dynamic f -> (forall a. (Num a, Ord a, Storable a, Unbox a) => f a -> r) -> r
+withDynamic (DFloat v) f = f v
+withDynamic (DInt v) f = f v
 
 hmapDynamic :: (forall a. f a -> g a) -> Dynamic f -> Dynamic g
 hmapDynamic f (DFloat v) = DFloat $ f v
