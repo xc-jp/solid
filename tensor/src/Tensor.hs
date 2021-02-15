@@ -57,7 +57,7 @@ import Tensor.Common as TC
 import Tensor.List as TL
 import Tensor.Vector as TV
 
-data Dynamic f = DFloat (f Float) | DInt (f Int)
+data Dynamic f = DFloat !(f Float) | DInt !(f Int)
   deriving (Generic)
 
 deriving instance (Eq (f Float), Eq (f Int)) => Eq (Dynamic f)
