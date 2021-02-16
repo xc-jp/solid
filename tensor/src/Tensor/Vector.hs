@@ -100,3 +100,13 @@ normalize (Tensor dims xs) =
       max' = VG.maximum xs
       epsilon = 1e-11
    in Tensor dims (VG.map (\x -> (x - min') / (max' - min' + epsilon)) xs)
+
+zipWithExact ::
+  (VG.Vector v a, VG.Vector v b, VG.Vector v c) =>
+  (a -> b -> c) ->
+  Tensor v a ->
+  Tensor v b ->
+  Maybe (Tensor v c)
+zipWithExact f (Tensor da va) (Tensor db vb)
+  | da == db = pure $ Tensor da (VG.zipWith f va vb)
+zipWithExact _ _ _ = Nothing
