@@ -10,10 +10,12 @@ module Tensor.Vector where
 import Control.Monad
 import Control.Monad.Fail (MonadFail)
 import Control.Monad.Random (MonadRandom, Random)
+import Data.AEq
 import Data.Int
 import Data.Positive
 import Data.Shape
 import qualified Data.Vector as VV
+import qualified Data.Vector.Fusion.Bundle as VB
 import qualified Data.Vector.Generic as VG
 import qualified Data.Vector.Storable as VS
 import qualified Data.Vector.Unboxed as VU
@@ -26,6 +28,22 @@ type UTensor = Tensor VU.Vector
 type STensor = Tensor VS.Vector
 
 type VTensor = Tensor VV.Vector
+
+{-# INLINE genericEqBy #-}
+genericEqBy :: (VG.Vector v a, AEq a) => (a -> a -> Bool) -> v a -> v a -> Bool
+genericEqBy f va vb = VB.eqBy f (VG.stream va) (VG.stream vb)
+
+instance (VS.Storable a, AEq a) => AEq (VS.Vector a) where
+  (===) = genericEqBy (===)
+  (~==) = genericEqBy (~==)
+
+instance (VU.Unbox a, AEq a) => AEq (VU.Vector a) where
+  (===) = genericEqBy (===)
+  (~==) = genericEqBy (~==)
+
+instance AEq a => AEq (VV.Vector a) where
+  (===) = genericEqBy (===)
+  (~==) = genericEqBy (~==)
 
 fromList :: VG.Vector v e => Dims -> [e] -> Maybe (Tensor v e)
 fromList dims es = if VG.length v == n then pure (Tensor dims v) else Nothing
