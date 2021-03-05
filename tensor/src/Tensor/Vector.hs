@@ -30,7 +30,7 @@ type STensor = Tensor VS.Vector
 type VTensor = Tensor VV.Vector
 
 {-# INLINE genericEqBy #-}
-genericEqBy :: (VG.Vector v a, AEq a) => (a -> a -> Bool) -> v a -> v a -> Bool
+genericEqBy :: VG.Vector v a => (a -> a -> Bool) -> v a -> v a -> Bool
 genericEqBy f va vb = VB.eqBy f (VG.stream va) (VG.stream vb)
 
 instance (VS.Storable a, AEq a) => AEq (VS.Vector a) where
@@ -44,6 +44,13 @@ instance (VU.Unbox a, AEq a) => AEq (VU.Vector a) where
 instance AEq a => AEq (VV.Vector a) where
   (===) = genericEqBy (===)
   (~==) = genericEqBy (~==)
+
+{-# INLINE eqBy #-}
+eqBy :: VG.Vector v e => (e -> e -> Bool) -> Tensor v e -> Tensor v e -> Bool
+eqBy f (Tensor da va) (Tensor db vb) = da == db && genericEqBy f va vb
+
+approx :: VG.Vector v Float => Tensor v Float -> Tensor v Float -> Bool
+approx = eqBy floatApprox
 
 fromList :: VG.Vector v e => Dims -> [e] -> Maybe (Tensor v e)
 fromList dims es = if VG.length v == n then pure (Tensor dims v) else Nothing

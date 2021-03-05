@@ -50,6 +50,8 @@ module Tensor
     -- * Dims
     Positive,
     Dims,
+
+    -- * Util
   )
 where
 

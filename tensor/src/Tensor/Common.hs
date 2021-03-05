@@ -14,6 +14,9 @@ module Tensor.Common
     genXavier,
     genXavierFanIn,
     genMSRA,
+
+    -- * Approximation test
+    floatApprox,
   )
 where
 
@@ -56,6 +59,7 @@ genNormal mean std = do
   u2 <- getRandom
   pure $! sqrt (-2 * log u1) * cos (2 * pi * u2) * std + mean
 
+{-# SPECIALIZE genXavier :: Positive -> Positive -> IO Float #-}
 genXavier ::
   (Random e, MonadRandom m, Floating e) =>
   -- | fan-in size
@@ -67,6 +71,7 @@ genXavier fanIn fanOut = getRandomR (- scale, scale)
   where
     scale = sqrt 3 / realToFrac (fanIn + fanOut)
 
+{-# SPECIALIZE genXavierFanIn :: Positive -> IO Float #-}
 genXavierFanIn ::
   (Random e, MonadRandom m, Floating e) =>
   -- | fan-in size
@@ -76,9 +81,19 @@ genXavierFanIn fanIn = getRandomR (- scale, scale)
   where
     scale = sqrt 3 / realToFrac fanIn
 
+{-# SPECIALIZE genMSRA :: Positive -> IO Float #-}
 genMSRA ::
   (MonadRandom m, Random e, Floating e) =>
   -- | fan-out size
   Positive ->
   m e
 genMSRA fanOut = genNormal 0 (sqrt (2 / realToFrac fanOut))
+
+{-# SPECIALIZE floatApprox :: Float -> Float -> Bool #-}
+floatApprox :: (AEq e, Ord e, RealFloat e) => e -> e -> Bool
+floatApprox a b = a ~== b || diff < eAbs || rel < eRel || (isNaN a && isNaN b)
+  where
+    eRel = 1e-2 -- allow 1% relative error
+    eAbs = 1e-5 -- allow 10^-5 absolute error
+    diff = abs (a - b)
+    rel = abs ((a - b) / a)
