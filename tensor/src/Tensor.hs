@@ -50,12 +50,10 @@ module Tensor
     -- * Dims
     Positive,
     Dims,
-
-    -- * Util
   )
 where
 
-import Data.AEq
+import Data.Approx
 import Data.Functor.Identity
 import Data.Positive
 import Data.Proxy
@@ -72,13 +70,10 @@ data Dynamic f = DFloat !(f Float) | DInt !(f Int)
 
 deriving instance (Eq (f Float), Eq (f Int)) => Eq (Dynamic f)
 
-instance (AEq (f Int), AEq (f Float)) => AEq (Dynamic f) where
-  DFloat a === DFloat b = a === b
-  DInt a === DInt b = a === b
-  _ === _ = False
-  DFloat a ~== DFloat b = a ~== b
-  DInt a ~== DInt b = a ~== b
-  _ ~== _ = False
+instance (EqWith (f Float), EqWith (f Int)) => EqWith (Dynamic f) where
+  eqWith eqs (DFloat a) (DFloat b) = eqWith eqs a b
+  eqWith eqs (DInt a) (DInt b) = eqWith eqs a b
+  eqWith _ _ _ = False
 
 deriving instance (Show (f Float), Show (f Int)) => Show (Dynamic f)
 

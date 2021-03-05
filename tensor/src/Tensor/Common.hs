@@ -14,35 +14,33 @@ module Tensor.Common
     genXavier,
     genXavierFanIn,
     genMSRA,
-
-    -- * Approximation test
-    floatApprox,
   )
 where
 
 import Control.Applicative
 import Control.DeepSeq (NFData)
 import Control.Monad.Random (MonadRandom, Random, getRandom, getRandomR)
-import Data.AEq
+import Data.Approx
 import Data.Positive
 import Data.Shape
 import GHC.Generics
 import Lens.Micro
 
-data Tensor v e = Tensor
+data Tensor v a = Tensor
   { tensorDims :: Dims,
-    tensorData :: v e
+    tensorData :: v a
   }
   deriving (Eq, Show, Generic, Functor, Foldable, Traversable)
 
-instance NFData (v e) => NFData (Tensor v e)
+instance NFData (v a) => NFData (Tensor v a)
 
-instance Eq (v e) => AEq (Tensor v e)
+instance EqWith (v a) => EqWith (Tensor v a) where
+  eqWith eqs (Tensor da va) (Tensor db vb) = da == db && eqWith eqs va vb
 
-tensorPut :: Monoid m => (Dims -> m) -> (v e -> m) -> (Tensor v e -> m)
+tensorPut :: Monoid m => (Dims -> m) -> (v a -> m) -> (Tensor v a -> m)
 tensorPut putDims putV (Tensor d v) = putDims d <> putV v
 
-tensorGet :: Monad m => m Dims -> m (v e) -> m (Tensor v e)
+tensorGet :: Monad m => m Dims -> m (v a) -> m (Tensor v a)
 tensorGet = liftA2 Tensor
 
 tensorDimsL :: Lens' (Tensor v a) Dims
@@ -53,7 +51,7 @@ tensorDimsL f (Tensor ds v) = flip Tensor v <$> f ds
 tensorDataL :: Lens (Tensor v a) (Tensor w b) (v a) (w b)
 tensorDataL f (Tensor sh v) = Tensor sh <$> f v
 
-genNormal :: (MonadRandom m, Random e, Floating e) => e -> e -> m e
+genNormal :: (MonadRandom m, Random a, Floating a) => a -> a -> m a
 genNormal mean std = do
   u1 <- getRandom
   u2 <- getRandom
@@ -61,39 +59,30 @@ genNormal mean std = do
 
 {-# SPECIALIZE genXavier :: Positive -> Positive -> IO Float #-}
 genXavier ::
-  (Random e, MonadRandom m, Floating e) =>
+  (Random a, MonadRandom m, Floating a) =>
   -- | fan-in size
   Positive ->
   -- | fan-out size
   Positive ->
-  m e
+  m a
 genXavier fanIn fanOut = getRandomR (- scale, scale)
   where
     scale = sqrt 3 / realToFrac (fanIn + fanOut)
 
 {-# SPECIALIZE genXavierFanIn :: Positive -> IO Float #-}
 genXavierFanIn ::
-  (Random e, MonadRandom m, Floating e) =>
+  (Random a, MonadRandom m, Floating a) =>
   -- | fan-in size
   Positive ->
-  m e
+  m a
 genXavierFanIn fanIn = getRandomR (- scale, scale)
   where
     scale = sqrt 3 / realToFrac fanIn
 
 {-# SPECIALIZE genMSRA :: Positive -> IO Float #-}
 genMSRA ::
-  (MonadRandom m, Random e, Floating e) =>
+  (MonadRandom m, Random a, Floating a) =>
   -- | fan-out size
   Positive ->
-  m e
+  m a
 genMSRA fanOut = genNormal 0 (sqrt (2 / realToFrac fanOut))
-
-{-# SPECIALIZE floatApprox :: Float -> Float -> Bool #-}
-floatApprox :: (AEq e, Ord e, RealFloat e) => e -> e -> Bool
-floatApprox a b = a ~== b || diff < eAbs || rel < eRel || (isNaN a && isNaN b)
-  where
-    eRel = 1e-2 -- allow 1% relative error
-    eAbs = 1e-5 -- allow 10^-5 absolute error
-    diff = abs (a - b)
-    rel = abs ((a - b) / a)

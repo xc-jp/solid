@@ -17,6 +17,7 @@ cabal-version: >=1.10
 
 library
   exposed-modules:
+    Data.Approx
     Data.Positive
     Data.Shape
     Tensor
@@ -30,6 +31,8 @@ library
       aeson
     , base
     , deepseq
+    , hspec
+    , HUnit
     , ieee754
     , microlens
     , MonadRandom
@@ -37,6 +40,7 @@ library
     , random
     , some
     , vector
+    , weave
 
   ghc-options:      -Wall -Wno-name-shadowing
 
