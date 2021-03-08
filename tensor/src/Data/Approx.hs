@@ -154,7 +154,7 @@ instance (EqWith a) => EqWith (VV.Vector a) where eqWith eqs = genericEqBy (eqWi
 {-# SPECIALIZE floatApprox :: Float -> Float -> Bool #-}
 {-# SPECIALIZE floatApprox :: Double -> Double -> Bool #-}
 floatApprox :: (AEq e, Ord e, RealFloat e) => e -> e -> Bool
-floatApprox a b = a ~== b || diff < eAbs || rel < eRel || (isNaN a && isNaN b)
+floatApprox a b = a ~== b || diff < eAbs || rel < eRel || isNaN a
   where
     eRel = 1e-2 -- allow 1% relative error
     eAbs = 1e-5 -- allow 10^-5 absolute error
