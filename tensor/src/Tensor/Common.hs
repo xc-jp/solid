@@ -35,7 +35,7 @@ data Tensor v a = Tensor
 instance NFData (v a) => NFData (Tensor v a)
 
 instance EqWith (v a) => EqWith (Tensor v a) where
-  eqWith eqs (Tensor da va) (Tensor db vb) = da == db && eqWith eqs va vb
+  eqWith eqs (Tensor da va) (Tensor db vb) = eqDims eqs da db && eqWith eqs va vb
 
 tensorPut :: Monoid m => (Dims -> m) -> (v a -> m) -> (Tensor v a -> m)
 tensorPut putDims putV (Tensor d v) = putDims d <> putV v
