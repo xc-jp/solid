@@ -70,12 +70,9 @@ data Dynamic f = DFloat !(f Float) | DInt !(f Int)
 
 deriving instance (Eq (f Float), Eq (f Int)) => Eq (Dynamic f)
 
-instance (EqWith (f Float), EqWith (f Int)) => EqWith (Dynamic f) where
-  eqWith eqs (DFloat a) (DFloat b) = eqWith eqs a b
-  eqWith eqs (DInt a) (DInt b) = eqWith eqs a b
-  eqWith _ _ _ = False
-
 deriving instance (Show (f Float), Show (f Int)) => Show (Dynamic f)
+
+instance (EqWith (f Float), EqWith (f Int)) => EqWith (Dynamic f)
 
 dtensorDims :: Dynamic (Tensor f) -> Dims
 dtensorDims = dynamic' tensorDims
