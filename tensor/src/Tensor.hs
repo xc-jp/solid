@@ -54,6 +54,7 @@ module Tensor
   )
 where
 
+import Control.DeepSeq (NFData)
 import Data.Approx
 import Data.Functor.Identity
 import Data.Int (Int32)
@@ -75,6 +76,8 @@ deriving instance (Eq (f Float), Eq (f Int32)) => Eq (Dynamic f)
 deriving instance (Show (f Float), Show (f Int32)) => Show (Dynamic f)
 
 instance (EqWith (f Float), EqWith (f Int32)) => EqWith (Dynamic f)
+
+instance (NFData (f Float), NFData (f Int32)) => NFData (Dynamic f)
 
 dtensorDims :: Dynamic (Tensor f) -> Dims
 dtensorDims = dynamic' tensorDims
