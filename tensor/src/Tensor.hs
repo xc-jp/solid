@@ -20,12 +20,12 @@ module Tensor
     Int32,
     Numerical,
     dynamic,
-    dynamic',
-    withDynamic,
     dynamic_,
+    hdynamic,
     bimapDynamic,
     bimapDynamic_,
     hmapDynamic,
+    fhdynamic,
     htraverseDynamic,
     DSTensor,
     DUTensor,
@@ -43,7 +43,9 @@ module Tensor
 
     -- * Elt
     Elt,
-    toElt,
+    dynToElt,
+    eltToDyn,
+    fromElt,
     pattern EltFloat,
     pattern EltInt,
     Proxy (..),
@@ -80,45 +82,54 @@ instance (EqWith (f Float), EqWith (f Int32)) => EqWith (Dynamic f)
 instance (NFData (f Float), NFData (f Int32)) => NFData (Dynamic f)
 
 dtensorDims :: Dynamic (Tensor f) -> Dims
-dtensorDims = dynamic' tensorDims
+dtensorDims = hdynamic tensorDims
 
 dtensorElt :: Dynamic (Tensor f) -> Elt
-dtensorElt = toElt
+dtensorElt = dynToElt
 
+-- | Destructor for 'Dynamic'
+{-# INLINE dynamic #-}
 dynamic :: (f Float -> r) -> (f Int32 -> r) -> (Dynamic f -> r)
 dynamic f _ (DFloat v) = f v
 dynamic _ f (DInt v) = f v
 
+{-# INLINE dynamic_ #-}
 dynamic_ :: r -> r -> (Dynamic f -> r)
 dynamic_ r _ (DFloat _) = r
 dynamic_ _ r (DInt _) = r
 
 type Numerical a = (Num a, Ord a, Storable a, Unbox a, Show a, Real a)
 
-dynamic' :: (forall a. Numerical a => f a -> r) -> (Dynamic f -> r)
-dynamic' f (DFloat v) = f v
-dynamic' f (DInt v) = f v
+{-# INLINE hdynamic #-}
+hdynamic :: (forall a. Numerical a => f a -> r) -> (Dynamic f -> r)
+hdynamic f (DFloat v) = f v
+hdynamic f (DInt v) = f v
 
--- | Just a flipped version of dynamic' because GHC doesn't like flip
-withDynamic :: Dynamic f -> (forall a. Numerical a => f a -> r) -> r
-withDynamic (DFloat v) f = f v
-withDynamic (DInt v) f = f v
+-- | Just a flipped version of hdynamic because GHC doesn't like flip
+{-# INLINE fhdynamic #-}
+fhdynamic :: Dynamic f -> (forall a. Numerical a => f a -> r) -> r
+fhdynamic (DFloat v) f = f v
+fhdynamic (DInt v) f = f v
 
+{-# INLINE hmapDynamic #-}
 hmapDynamic :: (forall a. Numerical a => f a -> g a) -> Dynamic f -> Dynamic g
 hmapDynamic f (DFloat v) = DFloat $ f v
 hmapDynamic f (DInt v) = DInt $ f v
 
+{-# INLINE bimapDynamic #-}
 bimapDynamic :: (f Float -> g Float) -> (f Int32 -> g Int32) -> Dynamic f -> Dynamic g
 bimapDynamic f _ (DFloat v) = DFloat $ f v
 bimapDynamic _ f (DInt v) = DInt $ f v
 
+{-# INLINE bimapDynamic_ #-}
 bimapDynamic_ :: f Float -> f Int32 -> Dynamic g -> Dynamic f
 bimapDynamic_ r _ (DFloat _) = DFloat r
 bimapDynamic_ _ r (DInt _) = DInt r
 
+{-# INLINE htraverseDynamic #-}
 htraverseDynamic ::
   Functor m =>
-  (forall a. (Num a, Ord a, Storable a, Unbox a) => f a -> m (g a)) ->
+  (forall a. Numerical a => f a -> m (g a)) ->
   Dynamic f ->
   m (Dynamic g)
 htraverseDynamic f (DFloat v) = DFloat <$> f v
@@ -132,19 +143,31 @@ type DUTensor = Dynamic UTensor
 
 type DVTensor = Dynamic VTensor
 
-type Elt = Dynamic Proxy
+data Elt = EltFloat | EltInt
+  deriving (Eq, Show, Generic)
 
-toElt :: Dynamic f -> Elt
-toElt = bimapDynamic_ Proxy Proxy
+instance EqWith Elt
 
-pattern EltFloat, EltInt :: Elt
-pattern EltFloat = DFloat Proxy
-pattern EltInt = DInt Proxy
+instance NFData Elt
 
-{-# COMPLETE EltFloat, EltInt #-}
+-- | Destructor for 'Elt'. Not named elt because we use that as a variable name a lot.
+{-# INLINE fromElt #-}
+fromElt :: r -> r -> Elt -> r
+fromElt x _ EltFloat = x
+fromElt _ x EltInt = x
+
+{-# INLINE eltToDyn #-}
+eltToDyn :: f Float -> f Int32 -> Elt -> Dynamic f
+eltToDyn x _ EltFloat = DFloat x
+eltToDyn _ x EltInt = DInt x
+
+{-# INLINE dynToElt #-}
+dynToElt :: Dynamic f -> Elt
+dynToElt = dynamic_ EltFloat EltInt
 
 type Scalar = Dynamic Identity
 
+{-# INLINE scalar #-}
 scalar :: (Float -> r) -> (Int32 -> r) -> Scalar -> r
 scalar f _ (DFloat (Identity x)) = f x
 scalar _ f (DInt (Identity x)) = f x
