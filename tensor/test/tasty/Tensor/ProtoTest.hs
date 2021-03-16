@@ -1,25 +1,24 @@
 module Tensor.ProtoTest (tests) where
 
-import Tensor.Common
-import Tensor.List
+import Tensor.Vector
 import Test.Tasty.Hspec
 
 tests :: Spec
 tests = do
-  describe "Tensor.List" $ do
+  describe "Tensor.Vector" $ do
     describe "fromList" $ do
       it "fails when passing fewer elements than declared on the `Dims`" $
-        fromList [5, 2] [(1 :: Float) .. 4] `shouldBe` Nothing
+        fromList [5, 2] [1 .. 4] `shouldBe` (Nothing :: Maybe (UTensor Float))
       it "creates a tensor when passing strictly more elements than declared on the `Dims`" $
-        let val = fromList [3, 2] [(1 :: Float) .. 7]
-            target = Tensor [3, 2] [1 .. 6]
-         in val `shouldBe` Just target
+        let Just val = fromList [3, 2] [1 .. 7] :: Maybe (UTensor Float)
+            Just target = fromList [3, 2] [1 .. 6]
+         in val `shouldBe` target
       it "creates a tensor when passing exactly the number of elements declared on the `Dims`" $
-        let val = fromList [2, 2] [(1 :: Float) .. 4]
-            target = Tensor [2, 2] [1 :: Float, 2, 3, 4]
-         in val `shouldBe` Just target
+        let Just val = fromList [2, 2] [1 .. 4] :: Maybe (UTensor Float)
+            Just target = fromList [2, 2] [1, 2, 3, 4]
+         in val `shouldBe` target
     describe "fill" $ do
       it "preserves dimensions" $
-        let val = fill [3, 2] (pi :: Double)
-            target = Tensor [3, 2] [pi, pi, pi, pi, pi, pi]
+        let val = fill [3, 2] pi :: UTensor Float
+            Just target = fromList [3, 2] [pi, pi, pi, pi, pi, pi]
          in val `shouldBe` target

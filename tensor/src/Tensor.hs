@@ -11,7 +11,6 @@ module Tensor
     STensor,
     VTensor,
     UTensor,
-    LTensor,
     Unbox,
     Storable,
 
@@ -30,7 +29,6 @@ module Tensor
     DSTensor,
     DUTensor,
     DVTensor,
-    DLTensor,
     dtensorDims,
     dtensorElt,
 
@@ -67,7 +65,6 @@ import Data.Vector.Storable (Storable)
 import Data.Vector.Unboxed (Unbox)
 import GHC.Generics
 import Tensor.Common as TC
-import Tensor.List as TL
 import Tensor.Vector as TV
 
 data Dynamic f = DFloat !(f Float) | DInt !(f Int32)
@@ -136,8 +133,6 @@ htraverseDynamic f (DFloat v) = DFloat <$> f v
 htraverseDynamic f (DInt v) = DInt <$> f v
 
 type DSTensor = Dynamic STensor
-
-type DLTensor = Dynamic LTensor
 
 type DUTensor = Dynamic UTensor
 
