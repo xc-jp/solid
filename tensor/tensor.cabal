@@ -37,7 +37,6 @@ library
     , MonadRandom
     , prettyprinter
     , random
-    , some
     , vector
     , weave
 
