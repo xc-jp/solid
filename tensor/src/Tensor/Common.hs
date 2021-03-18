@@ -27,8 +27,8 @@ import GHC.Generics
 import Lens.Micro
 
 data Tensor v a = Tensor
-  { tensorDims :: Dims,
-    tensorData :: v a
+  { tensorDims :: !Dims,
+    tensorData :: !(v a)
   }
   deriving (Eq, Show, Generic, Functor, Foldable, Traversable)
 

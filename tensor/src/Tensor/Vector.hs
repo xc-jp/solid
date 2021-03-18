@@ -1,3 +1,4 @@
+{-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GADTs #-}
@@ -58,7 +59,9 @@ fill dims e = Tensor dims (VG.replicate (dimsSize dims) e)
 
 {-# INLINE fillM #-}
 fillM :: (Monad m, VG.Vector v e) => m e -> Dims -> m (Tensor v e)
-fillM gen dims = Tensor dims <$> VG.replicateM (dimsSize dims) gen
+fillM gen dims = do
+  !vec <- VG.replicateM (dimsSize dims) gen
+  pure $! Tensor dims vec
 
 normal ::
   (VG.Vector v e, MonadRandom m, Random e, Floating e) =>
