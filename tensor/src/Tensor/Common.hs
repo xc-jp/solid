@@ -51,13 +51,14 @@ tensorDimsL f (Tensor ds v) = flip Tensor v <$> f ds
 tensorDataL :: Lens (Tensor v a) (Tensor w b) (v a) (w b)
 tensorDataL f (Tensor sh v) = Tensor sh <$> f v
 
+{-# INLINE genNormal #-}
 genNormal :: (MonadRandom m, Random a, Floating a) => a -> a -> m a
 genNormal mean std = do
   u1 <- getRandom
   u2 <- getRandom
   pure $! sqrt (-2 * log u1) * cos (2 * pi * u2) * std + mean
 
-{-# SPECIALIZE genXavier :: Positive -> Positive -> IO Float #-}
+{-# INLINE genXavier #-}
 genXavier ::
   (Random a, MonadRandom m, Floating a) =>
   -- | fan-in size
@@ -69,7 +70,7 @@ genXavier fanIn fanOut = getRandomR (- scale, scale)
   where
     scale = sqrt 3 / realToFrac (fanIn + fanOut)
 
-{-# SPECIALIZE genXavierFanIn :: Positive -> IO Float #-}
+{-# INLINE genXavierFanIn #-}
 genXavierFanIn ::
   (Random a, MonadRandom m, Floating a) =>
   -- | fan-in size
@@ -79,7 +80,7 @@ genXavierFanIn fanIn = getRandomR (- scale, scale)
   where
     scale = sqrt 3 / realToFrac fanIn
 
-{-# SPECIALIZE genMSRA :: Positive -> IO Float #-}
+{-# INLINE genMSRA #-}
 genMSRA ::
   (MonadRandom m, Random a, Floating a) =>
   -- | fan-out size

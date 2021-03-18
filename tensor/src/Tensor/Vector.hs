@@ -52,9 +52,11 @@ toTensorList = over tensorDataL VG.toList
 convert :: (VG.Vector v a, VG.Vector w a) => Tensor v a -> Tensor w a
 convert = over tensorDataL VG.convert
 
+{-# INLINE fill #-}
 fill :: VG.Vector v e => Dims -> e -> Tensor v e
 fill dims e = Tensor dims (VG.replicate (dimsSize dims) e)
 
+{-# INLINE fillM #-}
 fillM :: (Monad m, VG.Vector v e) => m e -> Dims -> m (Tensor v e)
 fillM gen dims = Tensor dims <$> VG.replicateM (dimsSize dims) gen
 
