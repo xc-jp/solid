@@ -1,3 +1,4 @@
+{-# LANGUAGE ConstraintKinds #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE RankNTypes #-}
@@ -16,6 +17,7 @@ module Tensor
 
     -- * Dynamic
     Dynamic (..),
+    Numerical,
     dynamic,
     dynamic',
     withDynamic,
@@ -83,16 +85,18 @@ dynamic_ :: r -> r -> (Dynamic f -> r)
 dynamic_ r _ (DFloat _) = r
 dynamic_ _ r (DInt _) = r
 
-dynamic' :: (forall a. (Num a, Ord a, Storable a, Unbox a) => f a -> r) -> (Dynamic f -> r)
+type Numerical a = (Num a, Ord a, Storable a, Unbox a, Show a, Real a)
+
+dynamic' :: (forall a. Numerical a => f a -> r) -> (Dynamic f -> r)
 dynamic' f (DFloat v) = f v
 dynamic' f (DInt v) = f v
 
 -- | Just a flipped version of dynamic' because GHC doesn't like flip
-withDynamic :: Dynamic f -> (forall a. (Num a, Ord a, Storable a, Unbox a) => f a -> r) -> r
+withDynamic :: Dynamic f -> (forall a. Numerical a => f a -> r) -> r
 withDynamic (DFloat v) f = f v
 withDynamic (DInt v) f = f v
 
-hmapDynamic :: (forall a. (Num a, Ord a, Storable a, Unbox a) => f a -> g a) -> Dynamic f -> Dynamic g
+hmapDynamic :: (forall a. Numerical a => f a -> g a) -> Dynamic f -> Dynamic g
 hmapDynamic f (DFloat v) = DFloat $ f v
 hmapDynamic f (DInt v) = DInt $ f v
 

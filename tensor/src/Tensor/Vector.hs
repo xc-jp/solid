@@ -10,6 +10,7 @@ module Tensor.Vector where
 import Control.Monad
 import Control.Monad.Fail (MonadFail)
 import Control.Monad.Random (MonadRandom, Random)
+import Data.Int
 import Data.Positive
 import Data.Shape
 import qualified Data.Vector as VV
@@ -110,3 +111,15 @@ zipWithExact ::
 zipWithExact f (Tensor da va) (Tensor db vb)
   | da == db = pure $ Tensor da (VG.zipWith f va vb)
 zipWithExact _ _ _ = Nothing
+
+{-# SPECIALIZE onehot :: Int -> STensor Int32 -> STensor Float #-}
+{-# SPECIALIZE onehot :: Int -> UTensor Int32 -> UTensor Float #-}
+onehot :: (VG.Vector v Float, VG.Vector v Int32) => Int -> Tensor v Int32 -> Tensor v Float
+onehot classes (Tensor dims v) =
+  Tensor
+    (fromIntegral classes : dims)
+    $ VG.generate n $ \ix ->
+      let (bt, cl) = divMod ix classes
+       in if fromIntegral (v VG.! cl) == bt then 1 else 0
+  where
+    n = classes * dimsSize dims
