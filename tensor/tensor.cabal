@@ -52,4 +52,4 @@ test-suite tasty
 
   main-is:          Main.hs
   default-language: Haskell2010
-  ghc-options:      -Wall -Wno-name-shadowing
+  ghc-options:      -Wall -Wno-name-shadowing -haddock
