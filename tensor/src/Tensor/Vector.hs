@@ -11,6 +11,8 @@ module Tensor.Vector where
 import Control.Monad
 import Control.Monad.Fail (MonadFail)
 import Control.Monad.Random (MonadRandom, Random)
+import Data.Foldable
+import Data.Functor.Rep
 import Data.Int
 import Data.Positive
 import Data.Shape
@@ -85,6 +87,19 @@ xavier fanIn fanOut = fillM (genXavier fanIn fanOut)
 
 xavier' :: (VG.Vector v e, MonadRandom m, Random e, Floating e) => Positive -> Dims -> m (Tensor v e)
 xavier' fanIn = fillM (genXavierFanIn fanIn)
+
+expandInner :: forall f v a b. (VG.Vector v a, VG.Vector v b, Foldable f, Representable f) => (a -> f b) -> Tensor v a -> Tensor v b
+expandInner f (Tensor dims vec) = Tensor (fromIntegral n : dims) (VG.concatMap f' vec)
+  where
+    n = length (tabulate (const ()) :: f ())
+    f' = VG.fromList . toList . f
+
+foldInner :: forall v a b. (VG.Vector v a, VG.Vector v b) => (forall f. Foldable f => (f a -> b)) -> Tensor v a -> Tensor v b
+foldInner f (Tensor [] vec) = singleton $ f $ VG.toList vec
+foldInner f (Tensor (n : dims) vec) = Tensor dims (VG.generate (dimsSize dims) f')
+  where
+    n' = fromIntegral n
+    f' base = f $ (\offset -> vec VG.! (base * n' + offset)) <$> take n' [0 ..]
 
 msra ::
   (VG.Vector v e, MonadRandom m, Random e, Floating e) =>
