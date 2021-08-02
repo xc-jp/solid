@@ -6,8 +6,6 @@ module Tensor.Common
     Tensor (..),
     tensorPut,
     tensorGet,
-    tensorDataL,
-    tensorDimsL,
 
     -- * Random generators
     genNormal,
@@ -24,7 +22,6 @@ import Data.Approx
 import Data.Positive
 import Data.Shape
 import GHC.Generics
-import Lens.Micro
 
 data Tensor v a = Tensor
   { tensorDims :: !Dims,
@@ -42,14 +39,6 @@ tensorPut putDims putV (Tensor d v) = putDims d <> putV v
 
 tensorGet :: Monad m => m Dims -> m (v a) -> m (Tensor v a)
 tensorGet = liftA2 Tensor
-
-tensorDimsL :: Lens' (Tensor v a) Dims
-tensorDimsL f (Tensor ds v) = flip Tensor v <$> f ds
-
--- | Change the base of the tensor.
--- This is unsafe since we don't check if the result has the same number of elements
-tensorDataL :: Lens (Tensor v a) (Tensor w b) (v a) (w b)
-tensorDataL f (Tensor sh v) = Tensor sh <$> f v
 
 {-# INLINE genNormal #-}
 genNormal :: (MonadRandom m, Random a, Floating a) => a -> a -> m a

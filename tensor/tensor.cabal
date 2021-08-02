@@ -22,6 +22,7 @@ library
     Data.Shape
     Tensor
     Tensor.Common
+    Tensor.Lens
     Tensor.Vector
 
   default-language: Haskell2010

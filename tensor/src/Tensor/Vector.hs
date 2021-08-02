@@ -20,6 +20,7 @@ import qualified Data.Vector.Storable as VS
 import qualified Data.Vector.Unboxed as VU
 import Lens.Micro
 import Tensor.Common
+import qualified Tensor.Lens as L
 import Prelude hiding (map)
 
 type UTensor = Tensor VU.Vector
@@ -41,17 +42,17 @@ singleton :: VG.Vector v a => a -> Tensor v a
 singleton = Tensor [] . VG.singleton
 
 fromTensorList :: VG.Vector v a => Tensor [] a -> Tensor v a
-fromTensorList = over tensorDataL VG.fromList
+fromTensorList = over L.tensorData VG.fromList
 
 toTensorList :: VG.Vector v e => Tensor v e -> Tensor [] e
-toTensorList = over tensorDataL VG.toList
+toTensorList = over L.tensorData VG.toList
 
 {-# SPECIALIZE convert :: Tensor VU.Vector Float -> Tensor VS.Vector Float #-}
 {-# SPECIALIZE convert :: Tensor VS.Vector Float -> Tensor VU.Vector Float #-}
 {-# SPECIALIZE convert :: Tensor VU.Vector Int -> Tensor VS.Vector Int #-}
 {-# SPECIALIZE convert :: Tensor VS.Vector Int -> Tensor VU.Vector Int #-}
 convert :: (VG.Vector v a, VG.Vector w a) => Tensor v a -> Tensor w a
-convert = over tensorDataL VG.convert
+convert = over L.tensorData VG.convert
 
 {-# INLINE fill #-}
 fill :: VG.Vector v e => Dims -> e -> Tensor v e
@@ -62,6 +63,9 @@ fillM :: (Monad m, VG.Vector v e) => m e -> Dims -> m (Tensor v e)
 fillM gen dims = do
   !vec <- VG.replicateM (dimsSize dims) gen
   pure $! Tensor dims vec
+
+traverse :: (Monad m, VG.Vector v a, VG.Vector v b) => (a -> m b) -> Tensor v a -> m (Tensor v b)
+traverse f (Tensor dims vec) = Tensor dims <$> VG.mapM f vec
 
 normal ::
   (VG.Vector v e, MonadRandom m, Random e, Floating e) =>
@@ -90,7 +94,7 @@ msra ::
 msra fanIn = fillM (genMSRA fanIn)
 
 map :: (VG.Vector v a, VG.Vector v b) => (a -> b) -> Tensor v a -> Tensor v b
-map = over tensorDataL . VG.map
+map = over L.tensorData . VG.map
 
 meanVar ::
   (Real e, VG.Vector v Double, VG.Vector v e) =>
