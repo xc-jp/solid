@@ -88,18 +88,32 @@ xavier fanIn fanOut = fillM (genXavier fanIn fanOut)
 xavier' :: (VG.Vector v e, MonadRandom m, Random e, Floating e) => Positive -> Dims -> m (Tensor v e)
 xavier' fanIn = fillM (genXavierFanIn fanIn)
 
-expandInner :: forall f v a b. (VG.Vector v a, VG.Vector v b, Foldable f, Representable f) => (a -> f b) -> Tensor v a -> Tensor v b
+-- | The opposite of 'foldInner', takes a function on every element and expands it into a new innermost dimension.
+-- A representable functor is guarantueed to always be the same size, which ensures that every element is expanded into the same size new dimension.
+expandInner ::
+  forall f v a b.
+  (VG.Vector v a, VG.Vector v b, Foldable f, Representable f) =>
+  (a -> f b) ->
+  Tensor v a ->
+  Tensor v b
 expandInner f (Tensor dims vec) = Tensor (fromIntegral n : dims) (VG.concatMap f' vec)
   where
     n = length (tabulate (const ()) :: f ())
     f' = VG.fromList . toList . f
+{-# INLINE expandInner #-}
 
-foldInner :: forall v a b. (VG.Vector v a, VG.Vector v b) => (forall f. Foldable f => (f a -> b)) -> Tensor v a -> Tensor v b
-foldInner f (Tensor [] vec) = singleton $ f $ VG.toList vec
+foldInner ::
+  forall v a b.
+  (VG.Vector v a, VG.Vector v b) =>
+  (v a -> b) ->
+  Tensor v a ->
+  Tensor v b
+foldInner f (Tensor [] vec) = singleton $ f vec
 foldInner f (Tensor (n : dims) vec) = Tensor dims (VG.generate (dimsSize dims) f')
   where
     n' = fromIntegral n
-    f' base = f $ (\offset -> vec VG.! (base * n' + offset)) <$> take n' [0 ..]
+    f' base = f (VG.slice (base * n') n' vec)
+{-# INLINE foldInner #-}
 
 msra ::
   (VG.Vector v e, MonadRandom m, Random e, Floating e) =>
