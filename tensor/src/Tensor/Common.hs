@@ -7,6 +7,9 @@ module Tensor.Common
     tensorPut,
     tensorGet,
 
+    -- * Generic constructors
+    vector,
+
     -- * Random generators
     genNormal,
     genXavier,
@@ -39,6 +42,10 @@ tensorPut putDims putV (Tensor d v) = putDims d <> putV v
 
 tensorGet :: Monad m => m Dims -> m (v a) -> m (Tensor v a)
 tensorGet = liftA2 Tensor
+
+-- | Turn any Foldable into a rank 1 tensor
+vector :: Foldable f => f a -> Tensor f a
+vector f = Tensor [fromIntegral $ length f] f
 
 {-# INLINE genNormal #-}
 genNormal :: (MonadRandom m, Random a, Floating a) => a -> a -> m a

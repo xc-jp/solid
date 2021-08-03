@@ -37,11 +37,17 @@ fromList dims es = if VG.length v == n then pure (Tensor dims v) else Nothing
     n = dimsSize dims
     v = VG.fromListN n es
 
+vectorFromList :: VG.Vector v a => [a] -> Tensor v a
+vectorFromList l = Tensor [fromIntegral $ length l] (VG.fromList l)
+
 fromListFail :: (VG.Vector v e, MonadFail m) => Dims -> [e] -> m (Tensor v e)
 fromListFail dims es = maybe (fail "fromListFail: list too short") pure $ fromList dims es
 
 singleton :: VG.Vector v a => a -> Tensor v a
 singleton = Tensor [] . VG.singleton
+
+vector :: (VG.Vector v a) => v a -> Tensor v a
+vector v = Tensor [fromIntegral $ VG.length v] v
 
 fromTensorList :: VG.Vector v a => Tensor [] a -> Tensor v a
 fromTensorList = over L.tensorData VG.fromList
