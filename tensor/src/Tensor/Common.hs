@@ -21,7 +21,6 @@ where
 import Control.Applicative
 import Control.DeepSeq (NFData)
 import Control.Monad.Random (MonadRandom, Random, getRandom, getRandomR)
-import Data.Approx
 import Data.Positive
 import Data.Shape
 import GHC.Generics
@@ -33,9 +32,6 @@ data Tensor v a = Tensor
   deriving (Eq, Show, Generic, Functor, Foldable, Traversable)
 
 instance NFData (v a) => NFData (Tensor v a)
-
-instance EqWith (v a) => EqWith (Tensor v a) where
-  eqWith eqs (Tensor da va) (Tensor db vb) = eqDims eqs da db && eqWith eqs va vb
 
 tensorPut :: Monoid m => (Dims -> m) -> (v a -> m) -> (Tensor v a -> m)
 tensorPut putDims putV (Tensor d v) = putDims d <> putV v

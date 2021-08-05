@@ -17,10 +17,10 @@ cabal-version: >=1.10
 
 library
   exposed-modules:
-    Data.Approx
     Data.Positive
     Data.Shape
     Tensor
+    Tensor.Approx
     Tensor.Common
     Tensor.Lens
     Tensor.Vector
