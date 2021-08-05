@@ -1,12 +1,12 @@
-{-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
 module Tensor.Approx
-  ( TApprox (..),
-    TApproxElt (..),
+  ( TApprox,
+    TApproxElt,
     DSTApprox,
+    tapprox,
+    tapproxElt,
     dapprox,
     dapproxElt,
   )
@@ -25,13 +25,21 @@ import Tensor
 --   - Have a relative difference of at most 1%
 --   - Have an absolute difference of at most 0.00001
 --   - The _left-hand_ argument is NaN
-newtype TApprox v e = TApprox {unTApprox :: Tensor v e}
-  deriving newtype (Show)
+-- Note that this should of course only be used for testing, since a non-transitive Eq instance is illegal.
+-- Therefore, we don't expose constructors for this datatype directly.
+newtype TApprox v e = TApprox (Tensor v e)
+  deriving (Show)
 
 -- | Like 'TApprox', but dimensions need to be exactly equal
-newtype TApproxElt v e = TApproxElt {unTApproxElt :: Tensor v e}
+newtype TApproxElt v e = TApproxElt (Tensor v e)
 
 type DSTApprox = Dynamic (TApprox VS.Vector)
+
+tapprox :: Tensor f a -> TApprox f a
+tapprox = TApprox
+
+tapproxElt :: Tensor f a -> TApproxElt f a
+tapproxElt = TApproxElt
 
 dapprox :: Dynamic (Tensor f) -> Dynamic (TApprox f)
 dapprox = bimapDynamic TApprox TApprox
