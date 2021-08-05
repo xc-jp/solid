@@ -1,15 +1,21 @@
+{-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
 module Tensor.Approx
   ( TApprox (..),
     TApproxElt (..),
+    DSTApprox,
+    dapprox,
+    dapproxElt,
   )
 where
 
 import Data.AEq
 import qualified Data.Vector.Fusion.Bundle as VB
 import qualified Data.Vector.Generic as VG
+import qualified Data.Vector.Storable as VS
 import Tensor
 
 -- | A Tensor whose Eq instance allows for tolerances on both the dimensions and Float elements.
@@ -20,9 +26,18 @@ import Tensor
 --   - Have an absolute difference of at most 0.00001
 --   - The _left-hand_ argument is NaN
 newtype TApprox v e = TApprox {unTApprox :: Tensor v e}
+  deriving newtype (Show)
 
 -- | Like 'TApprox', but dimensions need to be exactly equal
 newtype TApproxElt v e = TApproxElt {unTApproxElt :: Tensor v e}
+
+type DSTApprox = Dynamic (TApprox VS.Vector)
+
+dapprox :: Dynamic (Tensor f) -> Dynamic (TApprox f)
+dapprox = bimapDynamic TApprox TApprox
+
+dapproxElt :: Dynamic (Tensor f) -> Dynamic (TApproxElt f)
+dapproxElt = bimapDynamic TApproxElt TApproxElt
 
 instance VG.Vector v Float => Eq (TApprox v Float) where
   TApprox (Tensor da va) == TApprox (Tensor db vb) = dimsApprox da db && genericEqBy floatApprox va vb
