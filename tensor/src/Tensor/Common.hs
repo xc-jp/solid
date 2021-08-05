@@ -1,24 +1,16 @@
-{-# LANGUAGE ConstraintKinds #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE GADTs #-}
-{-# LANGUAGE QuantifiedConstraints #-}
-{-# LANGUAGE RankNTypes #-}
-{-# LANGUAGE TupleSections #-}
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveTraversable #-}
 
 module Tensor.Common
-  ( Tensor (..),
-    tensorDims,
-    tensorElt,
-    tensorEq,
-    tensorAEq,
-    tensorShowPrec,
-    tensorUnfold,
-    tensorUnfoldM,
-    tensorTrans,
-    tensorTransM,
+  ( -- * Tensor
+    Tensor (..),
     tensorPut,
     tensorGet,
+
+    -- * Generic constructors
+    vector,
+
+    -- * Random generators
     genNormal,
     genXavier,
     genXavierFanIn,
@@ -26,155 +18,64 @@ module Tensor.Common
   )
 where
 
-import Control.DeepSeq (NFData (rnf))
-import Control.Monad.Random
-  ( MonadRandom,
-    Random,
-    getRandom,
-    getRandomR,
-  )
-import Data.AEq
-import Data.Elt
+import Control.Applicative
+import Control.DeepSeq (NFData)
+import Control.Monad.Random (MonadRandom, Random, getRandom, getRandomR)
 import Data.Positive
 import Data.Shape
-import Data.Some
-import Data.Type.Equality
-import qualified Data.Vector.Storable as SVec
+import GHC.Generics
 
-data Tensor v where Tensor :: Dims -> Elt e -> v e -> Tensor v
+data Tensor v a = Tensor
+  { tensorDims :: !Dims,
+    tensorData :: !(v a)
+  }
+  deriving (Eq, Show, Generic, Functor, Foldable, Traversable)
 
-instance NFData (Tensor SVec.Vector) where
-  rnf (Tensor dims elt vec) = seq dims $! seq elt $! rnf vec
+instance NFData (v a) => NFData (Tensor v a)
 
-tensorDims :: Tensor v -> Dims
-tensorDims (Tensor dims _ _) = dims
+tensorPut :: Monoid m => (Dims -> m) -> (v a -> m) -> (Tensor v a -> m)
+tensorPut putDims putV (Tensor d v) = putDims d <> putV v
 
-tensorElt :: Tensor v -> Some Elt
-tensorElt (Tensor _ elt _) = Some elt
+tensorGet :: Monad m => m Dims -> m (v a) -> m (Tensor v a)
+tensorGet = liftA2 Tensor
 
-tensorPut ::
-  Monoid m =>
-  (Dims -> m) ->
-  (Some Elt -> m) ->
-  (forall e. Elt e -> v e -> m) ->
-  (Tensor v -> m)
-tensorPut putDims putElt putV (Tensor d e v) = putDims d <> putElt (Some e) <> putV e v
+-- | Turn any Foldable into a rank 1 tensor
+vector :: Foldable f => f a -> Tensor f a
+vector f = Tensor [fromIntegral $ length f] f
 
-tensorGet ::
-  Monad m =>
-  m Dims ->
-  m (Some Elt) ->
-  (forall e. Elt e -> m (v e)) ->
-  m (Tensor v)
-tensorGet getDims getElt getV = do
-  dims <- getDims
-  selt <- getElt
-  withSome selt $ \elt -> Tensor dims elt <$> getV elt
-
-tensorEq ::
-  (forall e. Eq e => Elt e -> v e -> v e -> r) ->
-  r ->
-  Tensor v ->
-  Tensor v ->
-  r
-tensorEq comp r0 (Tensor sa ea va) (Tensor sb eb vb)
-  | sa == sb,
-    Just Refl <- testEquality ea eb =
-    withEqElt ea $ comp ea va vb
-  | otherwise = r0
-
-tensorAEq ::
-  (forall e. AEq e => Elt e -> v e -> v e -> r) ->
-  r ->
-  Tensor v ->
-  Tensor v ->
-  r
-tensorAEq comp r0 (Tensor sa ea va) (Tensor sb eb vb)
-  | sa == sb,
-    Just Refl <- testEquality ea eb =
-    withAEqElt ea $ comp ea va vb
-  | otherwise = r0
-
-tensorShowPrec ::
-  (forall e. Show e => Elt e -> Int -> v e -> ShowS) ->
-  Int ->
-  Tensor v ->
-  ShowS
-tensorShowPrec f d (Tensor dims elt vs) =
-  withShowElt elt $
-    showParen (d > 10) $
-      shows dims
-        . showChar ' '
-        . showParen True (shows elt)
-        . showChar ' '
-        . f elt 10 vs
-
-tensorTrans ::
-  (forall a. Elt a -> v a -> w a) ->
-  Tensor v ->
-  Tensor w
-tensorTrans f (Tensor sh elt v) = Tensor sh elt (f elt v)
-
-tensorTransM ::
-  Functor m =>
-  (forall a. Elt a -> v a -> m (w a)) ->
-  Tensor v ->
-  m (Tensor w)
-tensorTransM f (Tensor sh elt v) = Tensor sh elt <$> f elt v
-
-tensorUnfold ::
-  KnownElt e =>
-  (forall g. (g -> Maybe (e, g)) -> g -> v e) ->
-  Dims ->
-  (forall g. (g -> (e, g)) -> g -> Tensor v)
-tensorUnfold unfoldr dims fg g0 = Tensor dims knownElt $ unfoldr fg' (dimsSize dims, g0)
-  where
-    fg' (0, _) = Nothing
-    fg' (n, g) = Just . fmap (pred n,) $ fg g
-
-tensorUnfoldM ::
-  (Monad m, KnownElt e) =>
-  (forall g. (g -> m (Maybe (e, g))) -> g -> m (v e)) ->
-  Dims ->
-  (forall g. (g -> m (e, g)) -> g -> m (Tensor v))
-tensorUnfoldM unfoldr dims fg g0 = Tensor dims knownElt <$> unfoldr fg' (dimsSize dims, g0)
-  where
-    fg' (0, _) = pure Nothing
-    fg' (n, g) = Just . fmap (pred n,) <$> fg g
-
-genNormal ::
-  (MonadRandom m, Random e, Floating e) =>
-  e ->
-  e ->
-  m e
+{-# INLINE genNormal #-}
+genNormal :: (MonadRandom m, Random a, Floating a) => a -> a -> m a
 genNormal mean std = do
   u1 <- getRandom
   u2 <- getRandom
   pure $! sqrt (-2 * log u1) * cos (2 * pi * u2) * std + mean
 
+{-# INLINE genXavier #-}
 genXavier ::
-  (Random e, MonadRandom m, Floating e) =>
+  (Random a, MonadRandom m, Floating a) =>
   -- | fan-in size
   Positive ->
   -- | fan-out size
   Positive ->
-  m e
+  m a
 genXavier fanIn fanOut = getRandomR (- scale, scale)
   where
     scale = sqrt 3 / realToFrac (fanIn + fanOut)
 
+{-# INLINE genXavierFanIn #-}
 genXavierFanIn ::
-  (Random e, MonadRandom m, Floating e) =>
+  (Random a, MonadRandom m, Floating a) =>
   -- | fan-in size
   Positive ->
-  m e
+  m a
 genXavierFanIn fanIn = getRandomR (- scale, scale)
   where
     scale = sqrt 3 / realToFrac fanIn
 
+{-# INLINE genMSRA #-}
 genMSRA ::
-  (MonadRandom m, Random e, Floating e) =>
+  (MonadRandom m, Random a, Floating a) =>
   -- | fan-out size
   Positive ->
-  m e
+  m a
 genMSRA fanOut = genNormal 0 (sqrt (2 / realToFrac fanOut))

@@ -1,7 +1,9 @@
 {-# LANGUAGE DeriveDataTypeable #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
 module Data.Positive where
 
+import Control.DeepSeq (NFData)
 import Control.Exception
 import Data.Aeson
 import Data.Data
@@ -10,7 +12,7 @@ import Data.Text.Prettyprint.Doc
 import Numeric.Natural
 
 newtype Positive = Positive Natural
-  deriving (Eq, Ord, Data)
+  deriving (Eq, Ord, Data, NFData)
 
 instance Pretty Positive where
   pretty (Positive n) = pretty n
