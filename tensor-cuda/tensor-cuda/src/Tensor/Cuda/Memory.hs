@@ -147,7 +147,7 @@ peekCudaTensor (Tensor dims cpta) = Tensor dims <$> peekCudaVector cpta (dimsSiz
 cudaMalloc :: forall a m. (Storable a, MonadCuda m) => m (CudaDevPtr a)
 cudaMalloc = cudaMallocBytes $ csizeOf (undefined :: a)
 
-cudaMallocBytes :: (MonadCuda m) => CSize -> m (CudaDevPtr a)
+cudaMallocBytes :: MonadCuda m => CSize -> m (CudaDevPtr a)
 cudaMallocBytes bytes = do
   cpa <- withPtr_ $ \pcpa ->
     callCuda [C.exp| int { devMalloc($(size_t bytes), $(void **pcpa)) } |]
