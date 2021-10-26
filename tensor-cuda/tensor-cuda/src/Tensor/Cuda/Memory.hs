@@ -55,7 +55,7 @@ import Tensor.Cuda.Internal
 import Tensor.Vector (STensor)
 
 C.context C.baseCtx
-C.include "<tensor-cuda/memory.h>"
+C.include "<tensor-cuda.h>"
 C.include "<stddef.h>"
 
 newtype CudaDevPtr a = CudaDevPtr {getCudaPtr :: Ptr a}

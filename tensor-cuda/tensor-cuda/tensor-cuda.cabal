@@ -1,4 +1,4 @@
-name:               tensor-cuda-hs
+name:               tensor-cuda
 version:            0.1
 homepage:           https://github.com/xc-jp/greenia
 license:            BSD3
@@ -45,7 +45,7 @@ test-suite tasty
     , tasty-hunit
     , tasty-quickcheck
     , tensor
-    , tensor-cuda-hs
+    , tensor-cuda
     , vector
 
   ghc-options:      -Wall -threaded

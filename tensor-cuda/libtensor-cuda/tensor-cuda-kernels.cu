@@ -1,6 +1,6 @@
 #include <cuda.h>
 #include <cstdio>
-#include "tensorcuda.cuh"
+#include "tensor-cuda-kernels.cuh"
 
 #define checkCudaErr(...)        \
   {                              \

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
-project(tensor-cuda_project LANGUAGES CUDA CXX)
+project(libtensor-cuda_project LANGUAGES CUDA CXX)
 set(cxx_flags -Wall -Wextra -pedantic -Werror -O2)
 set(cuda_flags -arch=sm_50
       -gencode=arch=compute_50,code=sm_50
@@ -20,7 +20,7 @@ else()
       "$<$<COMPILE_LANGUAGE:CUDA>:${cuda_flags}>"
       )
 endif()
-add_library(tensor-cuda SHARED tensorcuda.cu memory.cpp)
+add_library(tensor-cuda SHARED tensor-cuda-kernels.cu tensor-cuda.cpp)
 target_compile_features(tensor-cuda PUBLIC cxx_std_11 cuda_std_11)
 
 set_target_properties(tensor-cuda PROPERTIES
@@ -35,4 +35,4 @@ set_target_properties(tensor-cuda PROPERTIES
 
 target_link_libraries(tensor-cuda "${CUDA_LIBRARIES}" m pthread rt dl)
 install(TARGETS tensor-cuda DESTINATION lib)
-install(FILES memory.h DESTINATION include/tensor-cuda)
+install(FILES tensor-cuda.h DESTINATION include)

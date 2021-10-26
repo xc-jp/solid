@@ -4,9 +4,9 @@ let
   libtensor-cuda = with pkgs; stdenv.mkDerivation {
     src = src;
     buildInputs = [ cmake cudart cudatoolkit ];
-    name = "tensor-cuda";
+    name = "libtensor-cuda";
   };
-  sourceTarball = pkgs.runCommand "tensor-cuda-source" { } ''
+  sourceTarball = pkgs.runCommand "libtensor-cuda-source" { } ''
     ${pkgs.gnutar}/bin/tar czf $out ${src}/*
   '';
 in

@@ -1,5 +1,5 @@
-#include "memory.h"
-#include "tensorcuda.cuh"
+#include "tensor-cuda.h"
+#include "tensor-cuda-kernels.cuh"
 int devMalloc(size_t bytes, void** p) {
   return tensor_cuda::devMalloc(bytes, p);
 }
