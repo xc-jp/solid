@@ -12,7 +12,7 @@ where
 import Control.Exception hiding (catch, mask, uninterruptibleMask)
 import Control.Monad.Catch
 import Control.Monad.Except
-import Data.Array.Accelerate.Type (CInt)
+import Foreign.C.Types (CInt)
 import GHC.Stack (HasCallStack, callStack, prettyCallStack, withFrozenCallStack)
 
 newtype CudaT m a = CudaT {unCudaT :: ExceptT CudaException m a}

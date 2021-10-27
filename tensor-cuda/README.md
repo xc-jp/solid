@@ -27,7 +27,7 @@ withCuda a $ \pa ->
 Supported values:
 
 | Value Type | `alloc` | `with` | `peek` |
-|:-------|:--------|:-------|:-------|
+|:-----------|:--------|:-------|:-------|
 | `Storable a => a` | `allocCuda` | `withCuda` | `peekCuda` |
 | `Data.Vector.Storable.Vector a` | `allocCudaVector` | `withCudaVector` | `peekCudaVector` |
 | `Tensor.Vector.STensor a` | `allocCudaTensor` | `withCudaTensor` | `peekCudaTensor` |
