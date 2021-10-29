@@ -39,9 +39,9 @@ test-suite tasty
   build-depends:
       base
     , exceptions
+    , inline-c
     , QuickCheck
     , tasty
-    , tasty-hunit
     , tasty-quickcheck
     , tensor
     , tensor-cuda
