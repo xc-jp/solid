@@ -1,0 +1,51 @@
+name:               tensor-cuda
+version:            0.1
+homepage:           https://github.com/xc-jp/greenia
+license:            BSD3
+author:             Cross Compass
+maintainer:         ubikium@gmail.com
+category:           Machine Learning
+build-type:         Simple
+cabal-version:      >=1.10
+extra-source-files: README.md
+
+library
+  hs-source-dirs:   src
+  exposed-modules:
+    Tensor.Cuda
+    Tensor.Cuda.Internal
+    Tensor.Cuda.Memory
+
+  extra-libraries:  tensor-cuda
+  default-language: Haskell2010
+  build-depends:
+      base
+    , exceptions
+    , inline-c
+    , mtl
+    , tensor
+    , vector
+
+  ghc-options:      -Wall
+
+test-suite tasty
+  type:             exitcode-stdio-1.0
+  main-is:          tasty.hs
+  hs-source-dirs:   test/tasty
+  other-modules:
+    Tensor.Cuda.MemoryTest
+    Tensor.Cuda.TestUtils
+
+  build-depends:
+      base
+    , exceptions
+    , QuickCheck
+    , tasty
+    , tasty-hunit
+    , tasty-quickcheck
+    , tensor
+    , tensor-cuda
+    , vector
+
+  ghc-options:      -Wall -threaded
+  default-language: Haskell2010
