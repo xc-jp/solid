@@ -1,13 +1,6 @@
-{ pkgs ? import ../../nix { } }:
-let
+{ stdenv, cmake, cudart, cudatoolkit }:
+stdenv.mkDerivation {
   src = ./.;
-  libtensor-cuda = with pkgs; stdenv.mkDerivation {
-    src = src;
-    buildInputs = [ cmake cudart cudatoolkit ];
-    name = "libtensor-cuda";
-  };
-  sourceTarball = pkgs.runCommand "libtensor-cuda-source" { } ''
-    ${pkgs.gnutar}/bin/tar czf $out ${src}/*
-  '';
-in
-{ inherit libtensor-cuda sourceTarball; }
+  buildInputs = [ cmake cudart cudatoolkit ];
+  name = "libtensor-cuda";
+}
