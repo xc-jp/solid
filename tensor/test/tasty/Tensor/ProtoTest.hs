@@ -4,7 +4,7 @@ import Tensor.Vector
 import Test.Tasty.Hspec
 
 tests :: Spec
-tests = do
+tests =
   describe "Tensor.Vector" $ do
     describe "fromList" $ do
       it "fails when passing fewer elements than declared on the `Dims`" $
@@ -17,7 +17,7 @@ tests = do
         let Just val = fromList [2, 2] [1 .. 4] :: Maybe (UTensor Float)
             Just target = fromList [2, 2] [1, 2, 3, 4]
          in val `shouldBe` target
-    describe "fill" $ do
+    describe "fill" $
       it "preserves dimensions" $
         let val = fill [3, 2] pi :: UTensor Float
             Just target = fromList [3, 2] [pi, pi, pi, pi, pi, pi]
