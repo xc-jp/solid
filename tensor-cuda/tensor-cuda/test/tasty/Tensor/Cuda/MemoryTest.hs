@@ -45,7 +45,7 @@ prop_readAfterWriteIdentity a = assertCudaT . fmap (== a) $ withCuda a peekCuda
 
 -- \forall Storable a, as \in Vector a. withCudaVector as peekCudaVector == pure as
 prop_readAfterWriteIdentityVector :: (Eq a, Storable a) => Vector a -> Property
-prop_readAfterWriteIdentityVector as = assertCudaT . withCudaVector as $ \cpas n -> do
+prop_readAfterWriteIdentityVector as = assertCudaT . withCudaVector as $ \cpas n ->
   (== as) <$> peekCudaVector cpas n
 
 -- \forall Storable a, as \in STensor a. withCudaTensor as peekCudaTensor == pure as
