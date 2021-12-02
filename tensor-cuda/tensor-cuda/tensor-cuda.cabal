@@ -24,6 +24,7 @@ library
     , inline-c
     , mtl
     , tensor
+    , transformers
     , vector
 
   ghc-options:      -Wall
