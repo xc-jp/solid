@@ -12,3 +12,6 @@ int memcpyToDev(const size_t bytes, void* devDst, void* hostSrc) {
 int memcpyFromDev(const size_t bytes, void* hostDst, void* devSrc) {
   return tensor_cuda::memcpyFromDev(bytes, hostDst, devSrc);
 }
+int getDevice(int* device) {
+  return tensor_cuda::getDevice(device);
+}

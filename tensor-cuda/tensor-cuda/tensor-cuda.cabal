@@ -24,6 +24,7 @@ library
     , inline-c
     , mtl
     , tensor
+    , transformers
     , vector
 
   ghc-options:      -Wall
@@ -39,9 +40,9 @@ test-suite tasty
   build-depends:
       base
     , exceptions
+    , inline-c
     , QuickCheck
     , tasty
-    , tasty-hunit
     , tasty-quickcheck
     , tensor
     , tensor-cuda
