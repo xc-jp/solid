@@ -5,6 +5,7 @@
 module Tensor.Cuda.Memory
   ( -- * pointer
     CudaDevPtr (..),
+    getDeviceCuda,
 
     -- * storable
     allocCuda,
@@ -22,12 +23,24 @@ module Tensor.Cuda.Memory
     peekCudaTensor,
 
     -- * low level primitives
+
+    -- ** malloc
     cudaMalloc,
     cudaMallocBytes,
+    cudaMallocVector,
+    cudaMallocTensor,
+
+    -- ** memcpyToDev
     cudaMemcpyToDev,
     cudaMemcpyToDevBytes,
+    cudaMemcpyToDevVector,
+    cudaMemcpyToDevTensor,
+
+    -- ** memcpyFromDev
     cudaMemcpyFromDev,
     cudaMemcpyFromDevBytes,
+
+    -- ** free
     cudaFree,
   )
 where
@@ -56,6 +69,12 @@ C.include "<stddef.h>"
 
 newtype CudaDevPtr a = CudaDevPtr {getCudaPtr :: Ptr a}
 
+getDeviceCuda :: MonadCuda m => m Int
+getDeviceCuda = do
+  device <- liftIO $ new 0
+  callCuda [C.exp| int { getDevice($(int *device)) } |]
+  fromIntegral <$> liftIO (peek device)
+
 -- * CUDA memory bracket
 
 -- | Allocate memory of the size of @Storable@ object @a@ on CUDA
@@ -63,11 +82,10 @@ allocCuda :: (Storable a, MonadCuda m) => (CudaDevPtr a -> m b) -> m b
 allocCuda = bracket cudaMalloc cudaFree
 
 allocCudaVector :: forall a b m. (Storable a, MonadCuda m) => Int -> (CudaDevPtr a -> m b) -> m b
-allocCudaVector n = bracket (cudaMallocBytes $ csizeOfN (undefined :: a) n) cudaFree
+allocCudaVector n = bracket (cudaMallocVector n) cudaFree
 
 allocCudaTensor :: (Storable a, MonadCuda m) => Dims -> (Tensor CudaDevPtr a -> m b) -> m b
-allocCudaTensor dims f = allocCudaVector (dimsSize dims) $ \cpt ->
-  f (Tensor dims cpt)
+allocCudaTensor dims = bracket (cudaMallocTensor dims) (cudaFree . tensorData)
 
 -- | Upload a @Storable@ value @a@ to CUDA memory and get its address in a bracketed action.
 -- For vectors, use @withCudaVector@ to avoid intermediary memory allocation.
@@ -117,26 +135,6 @@ peekCudaTensor (Tensor dims cpta) = Tensor dims <$> peekCudaVector cpta (dimsSiz
 
 -- * Low-level
 
-cudaMemcpyToDev :: forall a m. (Storable a, MonadCuda m) => Ptr a -> CudaDevPtr a -> m ()
-cudaMemcpyToDev = cudaMemcpyToDevBytes $ csizeOf (undefined :: a)
-
-cudaMemcpyToDevBytes :: MonadCuda m => CSize -> Ptr a -> CudaDevPtr a -> m ()
-cudaMemcpyToDevBytes bytes srcp (CudaDevPtr dstp) =
-  callCuda [C.exp| int { memcpyToDev($(size_t bytes), $(void *devDst), $(void *hostSrc)) } |]
-  where
-    hostSrc = castPtr srcp
-    devDst = castPtr dstp
-
-cudaMemcpyFromDev :: forall a m. (Storable a, MonadCuda m) => CudaDevPtr a -> Ptr a -> m ()
-cudaMemcpyFromDev = cudaMemcpyFromDevBytes $ csizeOf (undefined :: a)
-
-cudaMemcpyFromDevBytes :: MonadCuda m => CSize -> CudaDevPtr a -> Ptr a -> m ()
-cudaMemcpyFromDevBytes bytes (CudaDevPtr srcp) dstp =
-  callCuda [C.exp| int { memcpyFromDev($(size_t bytes), $(void *hostDst), $(void *devSrc)) }|]
-  where
-    devSrc = castPtr srcp
-    hostDst = castPtr dstp
-
 cudaMalloc :: forall a m. (Storable a, MonadCuda m) => m (CudaDevPtr a)
 cudaMalloc = cudaMallocBytes $ csizeOf (undefined :: a)
 
@@ -148,6 +146,38 @@ cudaMallocBytes bytes = do
   when (cpa == nullPtr) $
     throwM AllocationFailed
   pure . CudaDevPtr $ castPtr cpa
+
+cudaMallocVector :: forall a m. (Storable a, MonadCuda m) => Int -> m (CudaDevPtr a)
+cudaMallocVector n = cudaMallocBytes $ csizeOfN (undefined :: a) n
+
+cudaMallocTensor :: (Storable a, MonadCuda m) => Dims -> m (Tensor CudaDevPtr a)
+cudaMallocTensor dims = Tensor dims <$> cudaMallocVector (dimsSize dims)
+
+cudaMemcpyToDev :: forall a m. (Storable a, MonadCuda m) => Ptr a -> CudaDevPtr a -> m ()
+cudaMemcpyToDev = cudaMemcpyToDevBytes $ csizeOf (undefined :: a)
+
+cudaMemcpyToDevBytes :: MonadCuda m => CSize -> Ptr a -> CudaDevPtr a -> m ()
+cudaMemcpyToDevBytes bytes srcp (CudaDevPtr dstp) =
+  callCuda [C.exp| int { memcpyToDev($(size_t bytes), $(void *devDst), $(void *hostSrc)) } |]
+  where
+    hostSrc = castPtr srcp
+    devDst = castPtr dstp
+
+cudaMemcpyToDevVector :: forall a m. (Storable a, MonadCuda m) => Vector a -> CudaDevPtr a -> m ()
+cudaMemcpyToDevVector v = cudaMemcpyToDevBytes (fromIntegral $ V.length v * sizeOf (undefined :: a)) (unsafeForeignPtrToPtr $ fst $ V.unsafeToForeignPtr0 v)
+
+cudaMemcpyToDevTensor :: (Storable a, MonadCuda m) => Tensor Vector a -> CudaDevPtr a -> m ()
+cudaMemcpyToDevTensor t = cudaMemcpyToDevVector (tensorData t)
+
+cudaMemcpyFromDev :: forall a m. (Storable a, MonadCuda m) => CudaDevPtr a -> Ptr a -> m ()
+cudaMemcpyFromDev = cudaMemcpyFromDevBytes $ csizeOf (undefined :: a)
+
+cudaMemcpyFromDevBytes :: MonadCuda m => CSize -> CudaDevPtr a -> Ptr a -> m ()
+cudaMemcpyFromDevBytes bytes (CudaDevPtr srcp) dstp =
+  callCuda [C.exp| int { memcpyFromDev($(size_t bytes), $(void *hostDst), $(void *devSrc)) }|]
+  where
+    devSrc = castPtr srcp
+    hostDst = castPtr dstp
 
 cudaFree :: MonadCuda m => CudaDevPtr a -> m ()
 cudaFree (CudaDevPtr pa) = callCuda [C.exp| int { devFree($(void *p)) }|]

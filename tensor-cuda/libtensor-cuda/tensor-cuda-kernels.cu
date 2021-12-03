@@ -30,3 +30,8 @@ int tensor_cuda::memcpyFromDev(const size_t bytes,
   checkCudaErr(cudaMemcpy(hostDst, devSrc, bytes, cudaMemcpyDeviceToHost));
   return 0;
 }
+
+int tensor_cuda::getDevice(int* device) {
+  checkCudaErr(cudaGetDevice(device));
+  return 0;
+}
