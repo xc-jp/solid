@@ -77,7 +77,7 @@ instance Eq CudaException where
   InvalidShape _ dims == InvalidShape _ dims' = dims == dims'
   _ == _ = False
 
-throwErrorCuda :: MonadCuda m => CudaException -> m ()
+throwErrorCuda :: MonadCuda m => CudaException -> m a
 throwErrorCuda = liftCuda . throwError
 
 callCuda :: (HasCallStack, MonadCuda m) => IO CInt -> m ()
