@@ -56,6 +56,7 @@ data CudaException
   = CudaError String Int
   | AllocationFailed
   | InvalidShape String Dims
+  | InsufficientCapacity String Int Int
 
 instance Show CudaException where
   show (CudaError stack errno) =
@@ -64,6 +65,8 @@ instance Show CudaException where
     "CUDA failed to allocate required memory"
   show (InvalidShape reason dims) =
     "Invalid shape " <> reason <> ", but got: " <> show dims
+  show (InsufficientCapacity resource expected actual) =
+    "Insufficient capacity for " <> resource <> ", expected at least " <> show expected <> ", but got " <> show actual
 
 instance Exception CudaException
 
