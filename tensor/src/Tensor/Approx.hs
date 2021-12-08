@@ -32,6 +32,7 @@ newtype TApprox v e = TApprox (Tensor v e)
 
 -- | Like 'TApprox', but dimensions need to be exactly equal
 newtype TApproxElt v e = TApproxElt (Tensor v e)
+  deriving (Show)
 
 type DSTApprox = Dynamic (TApprox VS.Vector)
 

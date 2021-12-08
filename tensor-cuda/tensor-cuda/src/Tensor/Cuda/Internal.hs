@@ -3,10 +3,11 @@
 
 module Tensor.Cuda.Internal
   ( CudaT,
+    runCudaT,
     MonadCuda (liftCuda),
     callCuda,
-    runCudaT,
     CudaException (..),
+    throwErrorCuda,
   )
 where
 
@@ -27,6 +28,9 @@ newtype CudaT m a = CudaT {unCudaT :: ExceptT CudaException m a}
 
 runCudaT :: CudaT m a -> m (Either CudaException a)
 runCudaT = runExceptT . unCudaT
+
+instance MonadTrans CudaT where
+  lift = CudaT . lift
 
 class (MonadIO m, MonadMask m) => MonadCuda m where
   liftCuda :: CudaT IO a -> m a
@@ -54,31 +58,35 @@ instance (MonadCuda m, Monoid w) => MonadCuda (RWST r w s m) where
 
 data CudaException
   = CudaError String Int
+  | CudaInsufficientCapacity String
   | AllocationFailed
   | InvalidShape String Dims
-  | InsufficientCapacity String Int Int
 
 instance Show CudaException where
-  show (CudaError stack errno) =
-    "CUDA error with code " <> show errno <> ", " <> stack
-  show AllocationFailed =
-    "CUDA failed to allocate required memory"
-  show (InvalidShape reason dims) =
-    "Invalid shape " <> reason <> ", but got: " <> show dims
-  show (InsufficientCapacity resource expected actual) =
-    "Insufficient capacity for " <> resource <> ", expected at least " <> show expected <> ", but got " <> show actual
+  show (CudaError stack errno) = "CUDA error with code " <> show errno <> ", " <> stack
+  show (CudaInsufficientCapacity stack) = "Insufficient capacity " <> stack
+  show AllocationFailed = "CUDA failed to allocate required memory"
+  show (InvalidShape reason dims) = "Invalid shape " <> reason <> ", but got: " <> show dims
 
 instance Exception CudaException
 
 instance Eq CudaException where
   CudaError _ code == CudaError _ code' = code == code'
+  CudaInsufficientCapacity _ == CudaInsufficientCapacity _ = True
   AllocationFailed == AllocationFailed = True
   InvalidShape _ dims == InvalidShape _ dims' = dims == dims'
   _ == _ = False
 
+throwErrorCuda :: MonadCuda m => CudaException -> m ()
+throwErrorCuda = liftCuda . throwError
+
 callCuda :: (HasCallStack, MonadCuda m) => IO CInt -> m ()
 callCuda code =
-  withFrozenCallStack . liftCuda . CudaT $
+  withFrozenCallStack $
     liftIO code >>= \case
       0 -> pure ()
-      c -> ExceptT . pure . Left $ CudaError (prettyCallStack callStack) (fromIntegral c)
+      c ->
+        throwErrorCuda $
+          if c == 10001
+            then CudaInsufficientCapacity (prettyCallStack callStack)
+            else CudaError (prettyCallStack callStack) (fromIntegral c)

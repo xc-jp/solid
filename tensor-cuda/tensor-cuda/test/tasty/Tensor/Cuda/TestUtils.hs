@@ -1,32 +1,67 @@
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE LambdaCase #-}
 
-module Tensor.Cuda.TestUtils where
-
-import Control.Monad (replicateM, (<=<))
-import Data.Shape
-import qualified Data.Vector.Storable as V
-import Foreign.Storable (Storable)
-import Tensor.Common (Tensor (..))
-import Tensor.Cuda
-import Tensor.Vector (STensor)
-import Test.QuickCheck hiding (Positive)
-import Test.QuickCheck.Monadic
-  ( PropertyM,
-    assert,
-    monadicIO,
-    run,
+module Tensor.Cuda.TestUtils
+  ( testCudaTWith,
+    propertyCudaT,
+    eqCudaT,
+    tensorEqCudaT,
+    expectAnyExceptionCudaT,
+    expectExceptionCudaT,
+    DimsSized (..),
+    STensorSized (..),
   )
-import Test.Tasty.QuickCheck (Property)
+where
+
+import Control.Monad
+import Data.Shape
+import qualified Data.Vector.Generic as VG
+import qualified Data.Vector.Storable as V
+import Tensor
+import Tensor.Approx
+import Tensor.Cuda
+import Test.QuickCheck
+import Test.QuickCheck.Monadic
 
 -- * Cuda interaction
 
-testCudaTWith :: (Either CudaException a -> PropertyM IO ()) -> CudaT IO a -> Property
-testCudaTWith f = monadicIO . (f <=< run) . runCudaT
+testCudaTWith :: Testable p => (Either CudaException a -> p) -> CudaT IO a -> Property
+testCudaTWith f cudaAction = monadicIO $ f <$> run (runCudaT cudaAction)
 
-assertCudaT :: CudaT IO Bool -> Property
-assertCudaT = testCudaTWith $ \case
-  Left _ -> assert False
-  Right b -> assert b
+-- | test the property when there is no exception
+propertyCudaT :: Testable t => CudaT IO t -> Property
+propertyCudaT = testCudaTWith $ \case
+  Left e -> unexpectedFailure e
+  Right a -> property a
+
+eqCudaT :: (Eq a, Show a) => a -> CudaT IO a -> Property
+eqCudaT expected = propertyCudaT . fmap (expected ===)
+
+tensorEqCudaT ::
+  (VG.Vector f a, Eq (TApproxElt f a), Show (f a)) =>
+  Tensor f a ->
+  CudaT IO (Tensor f a) ->
+  Property
+tensorEqCudaT expected actual =
+  tapproxElt expected `eqCudaT` (tapproxElt <$> actual)
+
+expectAnyExceptionCudaT :: CudaT IO a -> Property
+expectAnyExceptionCudaT = testCudaTWith $ \case
+  Left _ -> property True
+  Right _ -> unexpectedSuccess
+
+expectExceptionCudaT :: CudaException -> CudaT IO a -> Property
+expectExceptionCudaT e = testCudaTWith $ \case
+  Left e' -> e === e'
+  Right _ -> unexpectedSuccess
+
+-- * error messages
+
+unexpectedFailure :: CudaException -> Property
+unexpectedFailure e = counterexample ("Unexpected exception when running CUDA: " <> show e) $ property False
+
+unexpectedSuccess :: Property
+unexpectedSuccess = counterexample "Expecting exceptions but got success when running CUDA" $ property False
 
 -- * generators
 
