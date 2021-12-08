@@ -1,6 +1,5 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE LambdaCase #-}
-{-# LANGUAGE TupleSections #-}
 
 module Tensor.Cuda.Internal
   ( CudaT,
@@ -36,22 +35,22 @@ instance (MonadIO m, MonadMask m) => MonadCuda (CudaT m) where
   liftCuda (CudaT (ExceptT io)) = CudaT (ExceptT (liftIO io))
 
 instance MonadCuda m => MonadCuda (MaybeT m) where
-  liftCuda = MaybeT . fmap Just . liftCuda
+  liftCuda = lift . liftCuda
 
 instance (MonadCuda m) => MonadCuda (ExceptT e m) where
-  liftCuda = ExceptT . fmap Right . liftCuda
+  liftCuda = lift . liftCuda
 
 instance MonadCuda m => MonadCuda (ReaderT r m) where
-  liftCuda = ReaderT . const . liftCuda
+  liftCuda = lift . liftCuda
 
 instance (MonadCuda m, Monoid w) => MonadCuda (WriterT w m) where
-  liftCuda = WriterT . fmap (,mempty) . liftCuda
+  liftCuda = lift . liftCuda
 
 instance MonadCuda m => MonadCuda (StateT s m) where
-  liftCuda c = StateT $ \s -> fmap (,s) (liftCuda c)
+  liftCuda = lift . liftCuda
 
 instance (MonadCuda m, Monoid w) => MonadCuda (RWST r w s m) where
-  liftCuda c = RWST $ \_ s -> fmap (,s,mempty) (liftCuda c)
+  liftCuda = lift . liftCuda
 
 data CudaException
   = CudaError String Int
