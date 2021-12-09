@@ -6,6 +6,8 @@ module Tensor.Cuda.Memory
   ( -- * pointer
     CudaDevPtr (..),
     getDeviceCuda,
+    withPtr,
+    withPtr_,
 
     -- * storable
     allocaCuda,
@@ -73,6 +75,15 @@ getDeviceCuda = do
   callCuda [C.exp| int { getDevice($(int *device)) } |]
   fromIntegral <$> liftIO (peek device)
 
+withPtr :: (Storable a, MonadCuda m) => (Ptr a -> m b) -> m (a, b)
+withPtr f = bracketIO malloc free $ \ptr -> do
+  b <- f ptr
+  a <- liftIO $ peek ptr
+  pure (a, b)
+
+withPtr_ :: (Storable a, MonadCuda m) => (Ptr a -> m ()) -> m a
+withPtr_ = fmap fst . withPtr
+
 -- * CUDA memory bracket
 
 -- | Allocate memory of the size of @Storable@ object @a@ on CUDA
@@ -138,9 +149,8 @@ cudaMalloc = cudaMallocBytes $ csizeOf (undefined :: a)
 
 cudaMallocBytes :: (MonadCuda m) => CSize -> m (CudaDevPtr a)
 cudaMallocBytes bytes = do
-  pcpa <- liftIO $ new nullPtr
-  callCuda [C.exp| int { devMalloc($(size_t bytes), $(void **pcpa)) } |]
-  cpa <- liftIO $ peek pcpa
+  cpa <- withPtr_ $ \pcpa ->
+    callCuda [C.exp| int { devMalloc($(size_t bytes), $(void **pcpa)) } |]
   when (cpa == nullPtr) $
     throwErrorCuda AllocationFailed
   pure . CudaDevPtr $ castPtr cpa
