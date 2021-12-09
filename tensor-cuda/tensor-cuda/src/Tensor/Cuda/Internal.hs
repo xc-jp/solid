@@ -58,13 +58,13 @@ instance (MonadCuda m, Monoid w) => MonadCuda (RWST r w s m) where
 
 data CudaException
   = CudaError String Int
-  | CudaInsufficientCapacity String
+  | ContextTooSmall String
   | AllocationFailed
   | InvalidShape String Dims
 
 instance Show CudaException where
   show (CudaError stack errno) = "CUDA error with code " <> show errno <> ", " <> stack
-  show (CudaInsufficientCapacity stack) = "Insufficient capacity " <> stack
+  show (ContextTooSmall stack) = "Insufficient capacity " <> stack
   show AllocationFailed = "CUDA failed to allocate required memory"
   show (InvalidShape reason dims) = "Invalid shape " <> reason <> ", but got: " <> show dims
 
@@ -72,7 +72,7 @@ instance Exception CudaException
 
 instance Eq CudaException where
   CudaError _ code == CudaError _ code' = code == code'
-  CudaInsufficientCapacity _ == CudaInsufficientCapacity _ = True
+  ContextTooSmall _ == ContextTooSmall _ = True
   AllocationFailed == AllocationFailed = True
   InvalidShape _ dims == InvalidShape _ dims' = dims == dims'
   _ == _ = False
@@ -88,5 +88,5 @@ callCuda code =
       c ->
         throwErrorCuda $
           if c == 10001
-            then CudaInsufficientCapacity (prettyCallStack callStack)
+            then ContextTooSmall (prettyCallStack callStack)
             else CudaError (prettyCallStack callStack) (fromIntegral c)
