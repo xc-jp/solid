@@ -7,7 +7,7 @@ This package provides a Haskell interface to tensor memory communication with CU
 The intended way of performing memory communication is to use the high level bracket functions, grouped by different value types.
 
 Similar to `Foreign.Marshal`, for each value type, three functions are provided.
-- `allocCuda :: Size -> CudaT CudaDevPtr` allocates a chunk of memory of the given size on CUDA.
+- `allocaCuda :: Size -> CudaT CudaDevPtr` allocates a chunk of memory of the given size on CUDA.
 - `withCuda :: Value -> CudaT CudaDevPtr` uploads a value to CUDA, and returns a device pointer to that value.
 - `peekCuda :: CudaDevPtr -> Size -> CudaT Value` takes a device pointer, reads a given size of the CUDA memory, and marshals it into a Haskell value.
 
@@ -19,7 +19,7 @@ A typical use of the bracketed memory interface is as follows:
 
 ```haskell
 withCuda a $ \pa ->
-  allocCuda size $ \pb -> do
+  allocaCuda size $ \pb -> do
     cudaComputation pa pb
     peekCuda pb
 ```
@@ -28,9 +28,9 @@ Supported values:
 
 | Value Type | `alloc` | `with` | `peek` |
 |:-----------|:--------|:-------|:-------|
-| `Storable a => a` | `allocCuda` | `withCuda` | `peekCuda` |
-| `Data.Vector.Storable.Vector a` | `allocCudaVector` | `withCudaVector` | `peekCudaVector` |
-| `Tensor.Vector.STensor a` | `allocCudaTensor` | `withCudaTensor` | `peekCudaTensor` |
+| `Storable a => a` | `allocaCuda` | `withCuda` | `peekCuda` |
+| `Data.Vector.Storable.Vector a` | `allocaCudaVector` | `withCudaVector` | `peekCudaVector` |
+| `Tensor.Vector.STensor a` | `allocaCudaTensor` | `withCudaTensor` | `peekCudaTensor` |
 
 For tensors, the dimensions will be carried with the pointer and used to calculate size when marshalling.
 A tensor pointer will have the type `Tensor CudaDevPtr a`.

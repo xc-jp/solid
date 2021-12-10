@@ -4,6 +4,7 @@ import Data.Vector.Storable (Vector)
 import qualified Data.Vector.Storable as V
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Tensor
 import Tensor.Cuda
 import Tensor.Cuda.TestUtils
 import Test.Tasty
@@ -30,26 +31,23 @@ tests =
       testProperty "identity (Vector CFloat)" $
         \as -> (not . null $ as) ==> prop_readAfterWriteIdentityVector $ V.fromList (as :: [CFloat]),
       testProperty "identity (STensor Int)" $
-        \as -> prop_readAfterWriteIdentityTensor (as :: STensorSized Int),
+        \(STensorSized as) -> prop_readAfterWriteIdentityTensor (as :: STensor Int),
       testProperty "identity (STensor Float)" $
-        \as -> prop_readAfterWriteIdentityTensor (as :: STensorSized Float),
+        \(STensorSized as) -> prop_readAfterWriteIdentityTensor (as :: STensor Float),
       testProperty "identity (STensor CInt)" $
-        \as -> prop_readAfterWriteIdentityTensor (as :: STensorSized CInt),
+        \(STensorSized as) -> prop_readAfterWriteIdentityTensor (as :: STensor CInt),
       testProperty "identity (STensor CFloat)" $
-        \as -> prop_readAfterWriteIdentityTensor (as :: STensorSized CFloat)
+        \(STensorSized as) -> prop_readAfterWriteIdentityTensor (as :: STensor CFloat)
     ]
 
 -- \forall Storable a. withCuda a peekCuda == pure a
-prop_readAfterWriteIdentity :: (Eq a, Storable a) => a -> Property
-prop_readAfterWriteIdentity a = assertCudaT . fmap (== a) $ withCuda a peekCuda
+prop_readAfterWriteIdentity :: (Eq a, Storable a, Show a) => a -> Property
+prop_readAfterWriteIdentity a = a `eqCudaT` withCuda a peekCuda
 
 -- \forall Storable a, as \in Vector a. withCudaVector as peekCudaVector == pure as
-prop_readAfterWriteIdentityVector :: (Eq a, Storable a) => Vector a -> Property
-prop_readAfterWriteIdentityVector as = assertCudaT . withCudaVector as $ \cpas n ->
-  (== as) <$> peekCudaVector cpas n
+prop_readAfterWriteIdentityVector :: (Eq a, Storable a, Show a) => Vector a -> Property
+prop_readAfterWriteIdentityVector as = as `eqCudaT` withCudaVector as peekCudaVector
 
 -- \forall Storable a, as \in STensor a. withCudaTensor as peekCudaTensor == pure as
-prop_readAfterWriteIdentityTensor :: (Eq a, Storable a) => STensorSized a -> Property
-prop_readAfterWriteIdentityTensor (STensorSized as) =
-  assertCudaT . withCudaTensor as $
-    fmap (== as) . peekCudaTensor
+prop_readAfterWriteIdentityTensor :: (Eq a, Storable a, Show a) => STensor a -> Property
+prop_readAfterWriteIdentityTensor as = as `eqCudaT` withCudaTensor as peekCudaTensor

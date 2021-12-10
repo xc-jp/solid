@@ -6,19 +6,21 @@ module Tensor.Cuda.Memory
   ( -- * pointer
     CudaDevPtr (..),
     getDeviceCuda,
+    withPtr,
+    withPtr_,
 
     -- * storable
-    allocCuda,
+    allocaCuda,
     withCuda,
     peekCuda,
 
     -- * vectors (storable with a size)
-    allocCudaVector,
+    allocaCudaVector,
     withCudaVector,
     peekCudaVector,
 
     -- * STensor
-    allocCudaTensor,
+    allocaCudaTensor,
     withCudaTensor,
     peekCudaTensor,
 
@@ -46,8 +48,8 @@ module Tensor.Cuda.Memory
 where
 
 import Control.Monad (when)
-import Control.Monad.Catch (MonadMask, bracket, throwM)
-import Control.Monad.IO.Class
+import Control.Monad.Catch (MonadMask, bracket)
+import Control.Monad.Except
 import Data.Shape (Dims, dimsSize)
 import Data.Vector.Storable (Vector)
 import qualified Data.Vector.Storable as V
@@ -59,13 +61,11 @@ import Foreign.Marshal.Utils (new)
 import Foreign.Ptr (Ptr, castPtr, nullPtr)
 import Foreign.Storable (Storable, peek, sizeOf)
 import qualified Language.C.Inline as C
-import Tensor.Common (Tensor (..))
+import Tensor
 import Tensor.Cuda.Internal
-import Tensor.Vector (STensor)
 
 C.context C.baseCtx
 C.include "<tensor-cuda.h>"
-C.include "<stddef.h>"
 
 newtype CudaDevPtr a = CudaDevPtr {getCudaPtr :: Ptr a}
 
@@ -75,17 +75,26 @@ getDeviceCuda = do
   callCuda [C.exp| int { getDevice($(int *device)) } |]
   fromIntegral <$> liftIO (peek device)
 
+withPtr :: (Storable a, MonadCuda m) => (Ptr a -> m b) -> m (a, b)
+withPtr f = bracketIO malloc free $ \ptr -> do
+  b <- f ptr
+  a <- liftIO $ peek ptr
+  pure (a, b)
+
+withPtr_ :: (Storable a, MonadCuda m) => (Ptr a -> m ()) -> m a
+withPtr_ = fmap fst . withPtr
+
 -- * CUDA memory bracket
 
 -- | Allocate memory of the size of @Storable@ object @a@ on CUDA
-allocCuda :: (Storable a, MonadCuda m) => (CudaDevPtr a -> m b) -> m b
-allocCuda = bracket cudaMalloc cudaFree
+allocaCuda :: (Storable a, MonadCuda m) => (CudaDevPtr a -> m b) -> m b
+allocaCuda = bracket cudaMalloc cudaFree
 
-allocCudaVector :: forall a b m. (Storable a, MonadCuda m) => Int -> (CudaDevPtr a -> m b) -> m b
-allocCudaVector n = bracket (cudaMallocVector n) cudaFree
+allocaCudaVector :: forall a b m. (Storable a, MonadCuda m) => Int -> (CudaDevPtr a -> m b) -> m b
+allocaCudaVector n = bracket (cudaMallocVector n) cudaFree
 
-allocCudaTensor :: (Storable a, MonadCuda m) => Dims -> (Tensor CudaDevPtr a -> m b) -> m b
-allocCudaTensor dims = bracket (cudaMallocTensor dims) (cudaFree . tensorData)
+allocaCudaTensor :: (Storable a, MonadCuda m) => Dims -> (Tensor CudaDevPtr a -> m b) -> m b
+allocaCudaTensor dims = bracket (cudaMallocTensor dims) (cudaFree . tensorData)
 
 -- | Upload a @Storable@ value @a@ to CUDA memory and get its address in a bracketed action.
 -- For vectors, use @withCudaVector@ to avoid intermediary memory allocation.
@@ -140,11 +149,10 @@ cudaMalloc = cudaMallocBytes $ csizeOf (undefined :: a)
 
 cudaMallocBytes :: (MonadCuda m) => CSize -> m (CudaDevPtr a)
 cudaMallocBytes bytes = do
-  pcpa <- liftIO $ new nullPtr
-  callCuda [C.exp| int { devMalloc($(size_t bytes), $(void **pcpa)) } |]
-  cpa <- liftIO $ peek pcpa
+  cpa <- withPtr_ $ \pcpa ->
+    callCuda [C.exp| int { devMalloc($(size_t bytes), $(void **pcpa)) } |]
   when (cpa == nullPtr) $
-    throwM AllocationFailed
+    throwErrorCuda AllocationFailed
   pure . CudaDevPtr $ castPtr cpa
 
 cudaMallocVector :: forall a m. (Storable a, MonadCuda m) => Int -> m (CudaDevPtr a)
