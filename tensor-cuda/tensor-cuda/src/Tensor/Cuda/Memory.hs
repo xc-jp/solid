@@ -5,7 +5,6 @@
 module Tensor.Cuda.Memory
   ( -- * pointer
     CudaDevPtr (..),
-    getDeviceCuda,
     withPtr,
     withPtr_,
 
@@ -68,12 +67,6 @@ C.context C.baseCtx
 C.include "<tensor-cuda.h>"
 
 newtype CudaDevPtr a = CudaDevPtr {getCudaPtr :: Ptr a}
-
-getDeviceCuda :: MonadCuda m => m Int
-getDeviceCuda = do
-  device <- liftIO $ new 0
-  callCuda [C.exp| int { getDevice($(int *device)) } |]
-  fromIntegral <$> liftIO (peek device)
 
 withPtr :: (Storable a, MonadCuda m) => (Ptr a -> m b) -> m (a, b)
 withPtr f = bracketIO malloc free $ \ptr -> do

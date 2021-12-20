@@ -13,6 +13,7 @@ library
   hs-source-dirs:   src
   exposed-modules:
     Tensor.Cuda
+    Tensor.Cuda.Device
     Tensor.Cuda.Internal
     Tensor.Cuda.Memory
 
