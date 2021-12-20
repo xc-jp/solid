@@ -9,6 +9,10 @@
       return err;               \
   }
 
+int tensor_cuda::deviceSynchronize() {
+  return cudaDeviceSynchronize();
+}
+
 int tensor_cuda::devMalloc(const size_t bytes, void** p) {
   checkCudaErr(cudaMalloc(p, bytes));
   return 0;
