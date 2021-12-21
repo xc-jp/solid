@@ -1,6 +1,5 @@
 #include <cuda.h>
-#include <cstdio>
-#include "tensor-cuda-kernels.cuh"
+#include "tensor-cuda.h"
 
 #define checkCudaErr(...)       \
   {                             \
@@ -9,33 +8,33 @@
       return err;               \
   }
 
-int tensor_cuda::deviceSynchronize() {
+int deviceSynchronize() {
   return cudaDeviceSynchronize();
 }
 
-int tensor_cuda::devMalloc(const size_t bytes, void** p) {
+int devMalloc(const size_t bytes, void** p) {
   checkCudaErr(cudaMalloc(p, bytes));
   return 0;
 }
 
-int tensor_cuda::devFree(void* devp) {
+int devFree(void* devp) {
   checkCudaErr(cudaFree(devp));
   return 0;
 }
 
-int tensor_cuda::memcpyToDev(const size_t bytes, void* devDst, void* hostSrc) {
+int memcpyToDev(const size_t bytes, void* devDst, void* hostSrc) {
   checkCudaErr(cudaMemcpy(devDst, hostSrc, bytes, cudaMemcpyHostToDevice));
   return 0;
 }
 
-int tensor_cuda::memcpyFromDev(const size_t bytes,
+int memcpyFromDev(const size_t bytes,
                                void* hostDst,
                                void* devSrc) {
   checkCudaErr(cudaMemcpy(hostDst, devSrc, bytes, cudaMemcpyDeviceToHost));
   return 0;
 }
 
-int tensor_cuda::getDevice(int* device) {
+int getDevice(int* device) {
   checkCudaErr(cudaGetDevice(device));
   return 0;
 }

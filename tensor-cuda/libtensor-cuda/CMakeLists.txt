@@ -20,7 +20,7 @@ else()
       "$<$<COMPILE_LANGUAGE:CUDA>:${cuda_flags}>"
       )
 endif()
-add_library(tensor-cuda SHARED tensor-cuda-kernels.cu tensor-cuda.cpp)
+add_library(tensor-cuda SHARED tensor-cuda-kernels.cu)
 target_compile_features(tensor-cuda PUBLIC cxx_std_11 cuda_std_11)
 
 set_target_properties(tensor-cuda PROPERTIES
@@ -33,6 +33,6 @@ set_target_properties(tensor-cuda PROPERTIES
     CUDA_SEPARABLE_COMPILATION OFF
     CUDA_ARCHITECTURES 50 52 60 61 70)
 
-target_link_libraries(tensor-cuda "${CUDA_LIBRARIES}" m pthread rt dl)
+target_link_libraries(tensor-cuda "${CUDA_LIBRARIES}")
 install(TARGETS tensor-cuda DESTINATION lib)
 install(FILES tensor-cuda.h DESTINATION include)
