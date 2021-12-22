@@ -27,9 +27,7 @@ int memcpyToDev(const size_t bytes, void* devDst, void* hostSrc) {
   return 0;
 }
 
-int memcpyFromDev(const size_t bytes,
-                               void* hostDst,
-                               void* devSrc) {
+int memcpyFromDev(const size_t bytes, void* hostDst, void* devSrc) {
   checkCudaErr(cudaMemcpy(hostDst, devSrc, bytes, cudaMemcpyDeviceToHost));
   return 0;
 }
