@@ -1,10 +1,7 @@
 {-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE GADTs #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-{-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Tensor.Vector where
 
@@ -12,7 +9,6 @@ import Control.Monad
 import Control.Monad.Fail (MonadFail)
 import Control.Monad.Random (MonadRandom, Random)
 import Data.Foldable
-import Data.Functor.Rep
 import Data.Int
 import Data.Positive
 import Data.Shape
@@ -21,6 +17,7 @@ import qualified Data.Vector.Generic as VG
 import qualified Data.Vector.Storable as VS
 import qualified Data.Vector.Unboxed as VU
 import Lens.Micro
+import Nonlinear (Vec)
 import Tensor.Common
 import qualified Tensor.Lens as L
 import Prelude hiding (map)
@@ -95,16 +92,16 @@ xavier' :: (VG.Vector v e, MonadRandom m, Random e, Floating e) => Positive -> D
 xavier' fanIn = fillM (genXavierFanIn fanIn)
 
 -- | The opposite of 'foldInner', takes a function on every element and expands it into a new innermost dimension.
--- A representable functor is guarantueed to always be the same size, which ensures that every element is expanded into the same size new dimension.
+-- The Vec constraint forces the function to always yield the same number of arguments.
 expandInner ::
   forall f v a b.
-  (VG.Vector v a, VG.Vector v b, Foldable f, Representable f) =>
+  (VG.Vector v a, VG.Vector v b, Foldable f, Vec f) =>
   (a -> f b) ->
   Tensor v a ->
   Tensor v b
 expandInner f (Tensor dims vec) = Tensor (fromIntegral n : dims) (VG.concatMap f' vec)
   where
-    n = length (tabulate (const ()) :: f ())
+    n = length (pure () :: f ())
     f' = VG.fromList . toList . f
 {-# INLINE expandInner #-}
 
