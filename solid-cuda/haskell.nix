@@ -9,6 +9,6 @@
   # packages, this list is usually generated from the stack.yaml file or the
   # cabal.project file depending on how haskell.nix's project function is
   # called.
-  packages.tensor-cuda.buildable = lib.mkForce pkgs.config.cudaSupport;
-  packages.tensor-cuda.package.isLocal = lib.mkForce pkgs.config.cudaSupport;
+  packages.solid-cuda.buildable = lib.mkForce pkgs.config.cudaSupport;
+  packages.solid-cuda.package.isLocal = lib.mkForce pkgs.config.cudaSupport;
 }

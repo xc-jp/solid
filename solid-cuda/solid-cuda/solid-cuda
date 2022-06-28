@@ -1,4 +1,4 @@
-name:               tensor-cuda
+name:               solid-cuda
 version:            0.1
 homepage:           https://github.com/xc-jp/greenia
 license:            BSD3

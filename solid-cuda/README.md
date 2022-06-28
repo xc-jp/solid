@@ -1,4 +1,4 @@
-# Tensor CUDA
+# Solid CUDA
 
 This package provides a Haskell interface to tensor memory communication with CUDA.
 
