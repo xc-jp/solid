@@ -5,7 +5,7 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE UndecidableInstances #-}
 
-module Tensor
+module Array
   ( -- * Tensor Types
     Tensor (..),
     STensor,

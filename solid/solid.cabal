@@ -1,4 +1,4 @@
-name:          tensor
+name:          solid
 version:       0.1.0.0
 
 -- synopsis:
@@ -40,7 +40,6 @@ library
     , prettyprinter
     , random
     , vector
-    , weave
 
   ghc-options:      -Wall -Wno-name-shadowing
 
@@ -50,9 +49,9 @@ test-suite tasty
   other-modules:    Tensor.ProtoTest
   build-depends:
       base
+    , solid
     , tasty
     , tasty-hspec
-    , tensor
 
   main-is:          Main.hs
   default-language: Haskell2010
