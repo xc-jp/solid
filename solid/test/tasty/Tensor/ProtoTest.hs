@@ -1,6 +1,6 @@
 module Tensor.ProtoTest (tests) where
 
-import Tensor.Vector
+import Data.Solid.Vector
 import Test.Tasty.Hspec
 
 tests :: Spec

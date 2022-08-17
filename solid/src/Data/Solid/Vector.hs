@@ -3,23 +3,22 @@
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module Tensor.Vector where
+module Data.Solid.Vector where
 
 import Control.Monad
-import Control.Monad.Fail (MonadFail)
 import Control.Monad.Random (MonadRandom, Random)
 import Data.Foldable
 import Data.Int
-import Data.Positive
-import Data.Shape
+import Data.Solid.Common
+import qualified Data.Solid.Lens as L
+import Data.Solid.Positive
+import Data.Solid.Shape
 import qualified Data.Vector as VV
 import qualified Data.Vector.Generic as VG
 import qualified Data.Vector.Storable as VS
 import qualified Data.Vector.Unboxed as VU
 import Lens.Micro
 import Nonlinear (Vec)
-import Tensor.Common
-import qualified Tensor.Lens as L
 import Prelude hiding (map)
 
 type UTensor = Tensor VU.Vector

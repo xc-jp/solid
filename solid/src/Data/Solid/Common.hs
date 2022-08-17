@@ -1,7 +1,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DeriveTraversable #-}
 
-module Tensor.Common
+module Data.Solid.Common
   ( -- * Tensor
     Tensor (..),
     tensorPut,
@@ -21,8 +21,8 @@ where
 import Control.Applicative
 import Control.DeepSeq (NFData)
 import Control.Monad.Random (MonadRandom, Random, getRandom, getRandomR)
-import Data.Positive
-import Data.Shape
+import Data.Solid.Positive
+import Data.Solid.Shape
 import GHC.Generics
 
 data Tensor v a = Tensor

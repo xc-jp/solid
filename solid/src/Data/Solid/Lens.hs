@@ -1,8 +1,8 @@
-module Tensor.Lens where
+module Data.Solid.Lens where
 
-import Data.Shape (Dims)
+import Data.Solid.Common (Tensor (Tensor))
+import Data.Solid.Shape (Dims)
 import Lens.Micro (Lens, Lens')
-import Tensor.Common (Tensor (Tensor))
 
 tensorDims :: Lens' (Tensor v a) Dims
 tensorDims f (Tensor ds v) = flip Tensor v <$> f ds

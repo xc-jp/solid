@@ -1,15 +1,15 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
-module Data.Positive where
+module Data.Solid.Positive where
 
 import Control.DeepSeq (NFData)
 import Control.Exception
 import Data.Aeson
 import Data.Data
 import Data.Ratio
-import Data.Text.Prettyprint.Doc
 import Numeric.Natural
+import Prettyprinter
 
 newtype Positive = Positive Natural
   deriving (Eq, Ord, Data, NFData)

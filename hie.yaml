@@ -1,0 +1,7 @@
+cradle:
+  cabal:
+    - path: "solid/src"
+      component: "lib:solid"
+
+    - path: "solid/test/tasty"
+      component: "solid:test:tasty"

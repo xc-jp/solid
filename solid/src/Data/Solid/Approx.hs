@@ -1,7 +1,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 
-module Tensor.Approx
+module Data.Solid.Approx
   ( TApprox,
     TApproxElt,
     DSTApprox,
@@ -13,10 +13,10 @@ module Tensor.Approx
 where
 
 import Data.AEq
+import Data.Solid.Array
 import qualified Data.Vector.Fusion.Bundle as VB
 import qualified Data.Vector.Generic as VG
 import qualified Data.Vector.Storable as VS
-import Tensor
 
 -- | A Tensor whose Eq instance allows for tolerances on both the dimensions and Float elements.
 -- Dimensions only need to be equal after filtering out all size 1 dimensions.

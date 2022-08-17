@@ -5,7 +5,7 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE UndecidableInstances #-}
 
-module Array
+module Data.Solid.Array
   ( -- * Tensor Types
     Tensor (..),
     STensor,
@@ -57,14 +57,14 @@ where
 import Control.DeepSeq (NFData)
 import Data.Functor.Identity
 import Data.Int (Int32)
-import Data.Positive
 import Data.Proxy
-import Data.Shape as Sh
+import Data.Solid.Common as TC
+import Data.Solid.Positive
+import Data.Solid.Shape as Sh
+import Data.Solid.Vector as TV
 import Data.Vector.Storable (Storable)
 import Data.Vector.Unboxed (Unbox)
 import GHC.Generics
-import Tensor.Common as TC
-import Tensor.Vector as TV
 
 data Dynamic f = DFloat !(f Float) | DInt !(f Int32)
   deriving (Generic)
