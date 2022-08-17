@@ -1,7 +1,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE LambdaCase #-}
 
-module Tensor.Cuda.TestUtils
+module Data.Solid.Cuda.TestUtils
   ( testCudaTWith,
     propertyCudaT,
     eqCudaT,
@@ -14,12 +14,12 @@ module Tensor.Cuda.TestUtils
 where
 
 import Control.Monad
-import Data.Shape
+import Data.Solid.Approx
+import Data.Solid.Array
+import Data.Solid.Cuda
+import Data.Solid.Shape
 import qualified Data.Vector.Generic as VG
 import qualified Data.Vector.Storable as V
-import Tensor
-import Tensor.Approx
-import Tensor.Cuda
 import Test.QuickCheck
 import Test.QuickCheck.Monadic
 

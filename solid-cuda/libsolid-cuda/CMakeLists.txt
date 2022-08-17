@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
-project(libtensor-cuda_project LANGUAGES CUDA CXX)
+project(libsolid-cuda_project LANGUAGES CUDA CXX)
 set(cxx_flags -Wall -Wextra -pedantic -Werror -O2)
 set(cuda_flags -arch=sm_50
       -gencode=arch=compute_50,code=sm_50
@@ -20,10 +20,10 @@ else()
       "$<$<COMPILE_LANGUAGE:CUDA>:${cuda_flags}>"
       )
 endif()
-add_library(tensor-cuda SHARED tensor-cuda-kernels.cu)
-target_compile_features(tensor-cuda PUBLIC cxx_std_11 cuda_std_11)
+add_library(solid-cuda SHARED solid-cuda-kernels.cu)
+target_compile_features(solid-cuda PUBLIC cxx_std_11 cuda_std_11)
 
-set_target_properties(tensor-cuda PROPERTIES
+set_target_properties(solid-cuda PROPERTIES
     POSITION_INDEPENDENT_CODE ON
     # The arch and gencode flags aren't properly propagated to the nvida linker
     # (nvlink) when using separable compilation. Since all functions are
@@ -33,6 +33,6 @@ set_target_properties(tensor-cuda PROPERTIES
     CUDA_SEPARABLE_COMPILATION OFF
     CUDA_ARCHITECTURES 50 52 60 61 70)
 
-target_link_libraries(tensor-cuda "${CUDA_LIBRARIES}")
-install(TARGETS tensor-cuda DESTINATION lib)
-install(FILES tensor-cuda.h DESTINATION include)
+target_link_libraries(solid-cuda "${CUDA_LIBRARIES}")
+install(TARGETS solid-cuda DESTINATION lib)
+install(FILES solid-cuda.h DESTINATION include)

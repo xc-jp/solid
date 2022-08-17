@@ -1,7 +1,7 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE LambdaCase #-}
 
-module Tensor.Cuda.Internal
+module Data.Solid.Cuda.Internal
   ( CudaT,
     runCudaT,
     MonadCuda (liftCuda),
@@ -19,7 +19,7 @@ import Control.Monad.Trans.RWS
 import Control.Monad.Trans.Reader
 import Control.Monad.Trans.State
 import Control.Monad.Trans.Writer
-import Data.Shape
+import Data.Solid.Shape
 import Foreign.C.Types (CInt)
 import GHC.Stack (HasCallStack, callStack, prettyCallStack, withFrozenCallStack)
 

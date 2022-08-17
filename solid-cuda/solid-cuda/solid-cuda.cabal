@@ -12,19 +12,19 @@ extra-source-files: README.md
 library
   hs-source-dirs:   src
   exposed-modules:
-    Tensor.Cuda
-    Tensor.Cuda.Device
-    Tensor.Cuda.Internal
-    Tensor.Cuda.Memory
+    Data.Solid.Cuda
+    Data.Solid.Cuda.Device
+    Data.Solid.Cuda.Internal
+    Data.Solid.Cuda.Memory
 
-  extra-libraries:  tensor-cuda
+  extra-libraries:  solid-cuda
   default-language: Haskell2010
   build-depends:
       base
     , exceptions
     , inline-c
     , mtl
-    , tensor
+    , solid
     , transformers
     , vector
 
@@ -35,18 +35,18 @@ test-suite tasty
   main-is:          tasty.hs
   hs-source-dirs:   test/tasty
   other-modules:
-    Tensor.Cuda.MemoryTest
-    Tensor.Cuda.TestUtils
+    Data.Solid.Cuda.MemoryTest
+    Data.Solid.Cuda.TestUtils
 
   build-depends:
       base
     , exceptions
     , inline-c
     , QuickCheck
+    , solid
+    , solid-cuda
     , tasty
     , tasty-quickcheck
-    , tensor
-    , tensor-cuda
     , vector
 
   ghc-options:      -Wall -threaded

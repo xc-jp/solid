@@ -1,5 +1,5 @@
 #include <cuda.h>
-#include "tensor-cuda.h"
+#include "solid-cuda.h"
 
 #define checkCudaErr(...)       \
   {                             \

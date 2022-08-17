@@ -1,6 +1,6 @@
 module Main (main) where
 
-import qualified Tensor.Cuda.MemoryTest
+import qualified Data.Solid.Cuda.MemoryTest
 import Test.Tasty
 
 main :: IO ()
@@ -10,5 +10,5 @@ tests :: TestTree
 tests =
   testGroup
     "Unit tests"
-    [ Tensor.Cuda.MemoryTest.tests
+    [ Data.Solid.Cuda.MemoryTest.tests
     ]

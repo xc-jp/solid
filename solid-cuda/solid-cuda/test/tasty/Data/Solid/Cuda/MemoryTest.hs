@@ -1,12 +1,11 @@
-module Tensor.Cuda.MemoryTest (tests) where
+module Data.Solid.Cuda.MemoryTest (tests) where
 
+import Data.Solid.Array
+import Data.Solid.Cuda
+import Data.Solid.Cuda.TestUtils
 import Data.Vector.Storable (Vector)
 import qualified Data.Vector.Storable as V
 import Foreign.C.Types
-import Foreign.Storable (Storable)
-import Tensor
-import Tensor.Cuda
-import Tensor.Cuda.TestUtils
 import Test.Tasty
 import Test.Tasty.QuickCheck
 

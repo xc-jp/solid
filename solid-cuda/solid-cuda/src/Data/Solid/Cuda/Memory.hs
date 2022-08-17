@@ -2,7 +2,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TemplateHaskell #-}
 
-module Tensor.Cuda.Memory
+module Data.Solid.Cuda.Memory
   ( -- * pointer
     CudaDevPtr (..),
     withPtr,
@@ -46,10 +46,11 @@ module Tensor.Cuda.Memory
   )
 where
 
-import Control.Monad (when)
 import Control.Monad.Catch (MonadMask, bracket)
 import Control.Monad.Except
-import Data.Shape (Dims, dimsSize)
+import Data.Solid.Array
+import Data.Solid.Cuda.Internal
+import Data.Solid.Shape (dimsSize)
 import Data.Vector.Storable (Vector)
 import qualified Data.Vector.Storable as V
 import qualified Data.Vector.Storable.Mutable as MV
@@ -58,13 +59,11 @@ import Foreign.ForeignPtr.Unsafe (unsafeForeignPtrToPtr)
 import Foreign.Marshal.Alloc (free, malloc)
 import Foreign.Marshal.Utils (new)
 import Foreign.Ptr (Ptr, castPtr, nullPtr)
-import Foreign.Storable (Storable, peek, sizeOf)
+import Foreign.Storable (peek, sizeOf)
 import qualified Language.C.Inline as C
-import Tensor
-import Tensor.Cuda.Internal
 
 C.context C.baseCtx
-C.include "<tensor-cuda.h>"
+C.include "<solid-cuda.h>"
 
 newtype CudaDevPtr a = CudaDevPtr {getCudaPtr :: Ptr a}
 

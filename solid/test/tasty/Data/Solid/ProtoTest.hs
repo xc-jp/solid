@@ -1,11 +1,11 @@
-module Tensor.ProtoTest (tests) where
+module Data.Solid.ProtoTest (tests) where
 
 import Data.Solid.Vector
 import Test.Tasty.Hspec
 
 tests :: Spec
 tests =
-  describe "Tensor.Vector" $ do
+  describe "Data.Solid.Vector" $ do
     describe "fromList" $ do
       it "fails when passing fewer elements than declared on the `Dims`" $
         fromList [5, 2] [1 .. 4] `shouldBe` (Nothing :: Maybe (UTensor Float))
