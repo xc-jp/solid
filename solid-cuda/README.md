@@ -1,10 +1,19 @@
-# Solid CUDA
+# `solid-cuda`
 
-This package provides a Haskell interface to tensor memory communication with CUDA.
+This package is a Haskell interface for memory communication with CUDA.
+
+Features:
+
+- A bracket style is adopted so that unused memories are released safely and precisely, even in the case of exceptions.
+- A monad transformer `CudaT` is provided for easy composition.
+
+Three types of values are supported: `Storable` values from [`base`](https://hackage.haskell.org/package/base-4.17.0.0/docs/Foreign-Storable.html), `Data.Vector.Storable` from [the `vector` package](https://hackage.haskell.org/package/vector-0.13.0.0/docs/Data-Vector-Storable.html), and `solid` arrays.
+
+When used with `solid` arrays, the dimension is carried along with the pointer.
 
 ## High-level functions
 
-The intended way of performing memory communication is to use the high level bracket functions, grouped by different value types.
+It's recommended to use high level bracket functions.
 
 Similar to `Foreign.Marshal`, for each value type, three functions are provided.
 - `allocaCuda :: Size -> CudaT CudaDevPtr` allocates a chunk of memory of the given size on CUDA.
@@ -30,7 +39,7 @@ Supported values:
 |:-----------|:--------|:-------|:-------|
 | `Storable a => a` | `allocaCuda` | `withCuda` | `peekCuda` |
 | `Data.Vector.Storable.Vector a` | `allocaCudaVector` | `withCudaVector` | `peekCudaVector` |
-| `Tensor.Vector.STensor a` | `allocaCudaTensor` | `withCudaTensor` | `peekCudaTensor` |
+| `Data.Solid.Vector.STensor a` | `allocaCudaTensor` | `withCudaTensor` | `peekCudaTensor` |
 
 For tensors, the dimensions will be carried with the pointer and used to calculate size when marshalling.
 A tensor pointer will have the type `Tensor CudaDevPtr a`.
@@ -38,7 +47,7 @@ A tensor pointer will have the type `Tensor CudaDevPtr a`.
 ## Low-level functions
 
 It is also possible to directly manipulate the GPU memory with pointers and byte length.
-These functions should always be used in a bracket style to guarantee that the allocated memory is freed in the case of exceptions.
+These functions should be used in a bracket style to guarantee that allocated memories are freed in the case of exceptions.
 
 | Functions | Type |
 |:----------|:-----|
