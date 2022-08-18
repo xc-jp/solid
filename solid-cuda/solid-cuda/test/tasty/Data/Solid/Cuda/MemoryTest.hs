@@ -29,14 +29,14 @@ tests =
         \as -> (not . null $ as) ==> prop_readAfterWriteIdentityVector $ V.fromList (as :: [CInt]),
       testProperty "identity (Vector CFloat)" $
         \as -> (not . null $ as) ==> prop_readAfterWriteIdentityVector $ V.fromList (as :: [CFloat]),
-      testProperty "identity (STensor Int)" $
-        \(STensorSized as) -> prop_readAfterWriteIdentityTensor (as :: STensor Int),
-      testProperty "identity (STensor Float)" $
-        \(STensorSized as) -> prop_readAfterWriteIdentityTensor (as :: STensor Float),
-      testProperty "identity (STensor CInt)" $
-        \(STensorSized as) -> prop_readAfterWriteIdentityTensor (as :: STensor CInt),
-      testProperty "identity (STensor CFloat)" $
-        \(STensorSized as) -> prop_readAfterWriteIdentityTensor (as :: STensor CFloat)
+      testProperty "identity (SArray Int)" $
+        \(SArraySized as) -> prop_readAfterWriteIdentityArray (as :: SArray Int),
+      testProperty "identity (SArray Float)" $
+        \(SArraySized as) -> prop_readAfterWriteIdentityArray (as :: SArray Float),
+      testProperty "identity (SArray CInt)" $
+        \(SArraySized as) -> prop_readAfterWriteIdentityArray (as :: SArray CInt),
+      testProperty "identity (SArray CFloat)" $
+        \(SArraySized as) -> prop_readAfterWriteIdentityArray (as :: SArray CFloat)
     ]
 
 -- \forall Storable a. withCuda a peekCuda == pure a
@@ -47,6 +47,6 @@ prop_readAfterWriteIdentity a = a `eqCudaT` withCuda a peekCuda
 prop_readAfterWriteIdentityVector :: (Eq a, Storable a, Show a) => Vector a -> Property
 prop_readAfterWriteIdentityVector as = as `eqCudaT` withCudaVector as peekCudaVector
 
--- \forall Storable a, as \in STensor a. withCudaTensor as peekCudaTensor == pure as
-prop_readAfterWriteIdentityTensor :: (Eq a, Storable a, Show a) => STensor a -> Property
-prop_readAfterWriteIdentityTensor as = as `eqCudaT` withCudaTensor as peekCudaTensor
+-- \forall Storable a, as \in SArray a. withCudaArray as peekCudaArray == pure as
+prop_readAfterWriteIdentityArray :: (Eq a, Storable a, Show a) => SArray a -> Property
+prop_readAfterWriteIdentityArray as = as `eqCudaT` withCudaArray as peekCudaArray

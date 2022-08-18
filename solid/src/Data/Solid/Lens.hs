@@ -1,13 +1,13 @@
 module Data.Solid.Lens where
 
-import Data.Solid.Common (Tensor (Tensor))
+import Data.Solid.Common (Array (Array))
 import Data.Solid.Shape (Dims)
 import Lens.Micro (Lens, Lens')
 
-tensorDims :: Lens' (Tensor v a) Dims
-tensorDims f (Tensor ds v) = flip Tensor v <$> f ds
+arrayDims :: Lens' (Array v a) Dims
+arrayDims f (Array ds v) = flip Array v <$> f ds
 
--- | Change the base of the tensor.
+-- | Change the base of the array.
 -- This is unsafe since we don't check if the result has the same number of elements
-tensorData :: Lens (Tensor v a) (Tensor w b) (v a) (w b)
-tensorData f (Tensor sh v) = Tensor sh <$> f v
+arrayData :: Lens (Array v a) (Array w b) (v a) (w b)
+arrayData f (Array sh v) = Array sh <$> f v

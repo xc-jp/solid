@@ -6,7 +6,7 @@ import Test.Tasty.Hspec
 
 main :: IO ()
 main = do
-  t <- testGroup "Tensor" <$> tests
+  t <- testGroup "Array" <$> tests
   defaultMain t
 
 tests :: IO [TestTree]

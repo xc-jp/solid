@@ -2,9 +2,9 @@
 {-# LANGUAGE FlexibleInstances #-}
 
 module Data.Solid.Approx
-  ( TApprox,
-    TApproxElt,
-    DSTApprox,
+  ( AApprox,
+    AApproxElt,
+    DSAApprox,
     tapprox,
     tapproxElt,
     dapprox,
@@ -18,7 +18,7 @@ import qualified Data.Vector.Fusion.Bundle as VB
 import qualified Data.Vector.Generic as VG
 import qualified Data.Vector.Storable as VS
 
--- | A Tensor whose Eq instance allows for tolerances on both the dimensions and Float elements.
+-- | An Array whose Eq instance allows for tolerances on both the dimensions and Float elements.
 -- Dimensions only need to be equal after filtering out all size 1 dimensions.
 -- Floats need to fulfill 1 of
 --   - Be equal according to AEq's (~==)
@@ -27,38 +27,38 @@ import qualified Data.Vector.Storable as VS
 --   - The _left-hand_ argument is NaN
 -- Note that this should of course only be used for testing, since a non-transitive Eq instance is illegal.
 -- Therefore, we don't expose constructors for this datatype directly.
-newtype TApprox v e = TApprox (Tensor v e)
+newtype AApprox v e = AApprox (Array v e)
   deriving (Show)
 
--- | Like 'TApprox', but dimensions need to be exactly equal
-newtype TApproxElt v e = TApproxElt (Tensor v e)
+-- | Like 'AApprox', but dimensions need to be exactly equal
+newtype AApproxElt v e = AApproxElt (Array v e)
   deriving (Show)
 
-type DSTApprox = Dynamic (TApprox VS.Vector)
+type DSAApprox = Dynamic (AApprox VS.Vector)
 
-tapprox :: Tensor f a -> TApprox f a
-tapprox = TApprox
+tapprox :: Array f a -> AApprox f a
+tapprox = AApprox
 
-tapproxElt :: Tensor f a -> TApproxElt f a
-tapproxElt = TApproxElt
+tapproxElt :: Array f a -> AApproxElt f a
+tapproxElt = AApproxElt
 
-dapprox :: Dynamic (Tensor f) -> Dynamic (TApprox f)
-dapprox = bimapDynamic TApprox TApprox
+dapprox :: Dynamic (Array f) -> Dynamic (AApprox f)
+dapprox = bimapDynamic AApprox AApprox
 
-dapproxElt :: Dynamic (Tensor f) -> Dynamic (TApproxElt f)
-dapproxElt = bimapDynamic TApproxElt TApproxElt
+dapproxElt :: Dynamic (Array f) -> Dynamic (AApproxElt f)
+dapproxElt = bimapDynamic AApproxElt AApproxElt
 
-instance VG.Vector v Float => Eq (TApprox v Float) where
-  TApprox (Tensor da va) == TApprox (Tensor db vb) = dimsApprox da db && genericEqBy floatApprox va vb
+instance VG.Vector v Float => Eq (AApprox v Float) where
+  AApprox (Array da va) == AApprox (Array db vb) = dimsApprox da db && genericEqBy floatApprox va vb
 
-instance VG.Vector v Int32 => Eq (TApprox v Int32) where
-  TApprox (Tensor da va) == TApprox (Tensor db vb) = dimsApprox da db && genericEqBy (==) va vb
+instance VG.Vector v Int32 => Eq (AApprox v Int32) where
+  AApprox (Array da va) == AApprox (Array db vb) = dimsApprox da db && genericEqBy (==) va vb
 
-instance VG.Vector v Float => Eq (TApproxElt v Float) where
-  TApproxElt (Tensor da va) == TApproxElt (Tensor db vb) = da == db && genericEqBy floatApprox va vb
+instance VG.Vector v Float => Eq (AApproxElt v Float) where
+  AApproxElt (Array da va) == AApproxElt (Array db vb) = da == db && genericEqBy floatApprox va vb
 
-instance VG.Vector v Int32 => Eq (TApproxElt v Int32) where
-  TApproxElt (Tensor da va) == TApproxElt (Tensor db vb) = da == db && genericEqBy (==) va vb
+instance VG.Vector v Int32 => Eq (AApproxElt v Int32) where
+  AApproxElt (Array da va) == AApproxElt (Array db vb) = da == db && genericEqBy (==) va vb
 
 dimsApprox :: Dims -> Dims -> Bool
 dimsApprox as bs = filter (/= 1) as == filter (/= 1) bs

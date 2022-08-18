@@ -2,10 +2,10 @@
 {-# LANGUAGE DeriveTraversable #-}
 
 module Data.Solid.Common
-  ( -- * Tensor
-    Tensor (..),
-    tensorPut,
-    tensorGet,
+  ( -- * Array
+    Array (..),
+    arrayPut,
+    arrayGet,
 
     -- * Generic constructors
     vector,
@@ -25,23 +25,23 @@ import Data.Solid.Positive
 import Data.Solid.Shape
 import GHC.Generics
 
-data Tensor v a = Tensor
-  { tensorDims :: !Dims,
-    tensorData :: !(v a)
+data Array v a = Array
+  { arrayDims :: !Dims,
+    arrayData :: !(v a)
   }
   deriving (Eq, Show, Generic, Functor, Foldable, Traversable)
 
-instance NFData (v a) => NFData (Tensor v a)
+instance NFData (v a) => NFData (Array v a)
 
-tensorPut :: Monoid m => (Dims -> m) -> (v a -> m) -> (Tensor v a -> m)
-tensorPut putDims putV (Tensor d v) = putDims d <> putV v
+arrayPut :: Monoid m => (Dims -> m) -> (v a -> m) -> (Array v a -> m)
+arrayPut putDims putV (Array d v) = putDims d <> putV v
 
-tensorGet :: Monad m => m Dims -> m (v a) -> m (Tensor v a)
-tensorGet = liftA2 Tensor
+arrayGet :: Monad m => m Dims -> m (v a) -> m (Array v a)
+arrayGet = liftA2 Array
 
--- | Turn any Foldable into a rank 1 tensor
-vector :: Foldable f => f a -> Tensor f a
-vector f = Tensor [fromIntegral $ length f] f
+-- | Turn any Foldable into a rank 1 array
+vector :: Foldable f => f a -> Array f a
+vector f = Array [fromIntegral $ length f] f
 
 {-# INLINE genNormal #-}
 genNormal :: (MonadRandom m, Random a, Floating a) => a -> a -> m a

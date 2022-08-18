@@ -39,10 +39,10 @@ Supported values:
 |:-----------|:--------|:-------|:-------|
 | `Storable a => a` | `allocaCuda` | `withCuda` | `peekCuda` |
 | `Data.Vector.Storable.Vector a` | `allocaCudaVector` | `withCudaVector` | `peekCudaVector` |
-| `Data.Solid.Vector.STensor a` | `allocaCudaTensor` | `withCudaTensor` | `peekCudaTensor` |
+| `Data.Solid.Vector.SArray a` | `allocaCudaArray` | `withCudaArray` | `peekCudaArray` |
 
-For tensors, the dimensions will be carried with the pointer and used to calculate size when marshalling.
-A tensor pointer will have the type `Tensor CudaDevPtr a`.
+For arrays, the dimensions will be carried with the pointer and used to calculate size when marshalling.
+An array pointer will have the type `Array CudaDevPtr a`.
 
 ## Low-level functions
 
@@ -54,11 +54,11 @@ These functions should be used in a bracket style to guarantee that allocated me
 | `cudaMalloc` | `(Storable a) => CudaT m (CudaDevPtr a)` |
 | `cudaMallocBytes` | `CSize -> CudaT m (CudaDevPtr a)` |
 | `cudaMallocVector` | `Int -> CudaT m (CudaDevPtr a)` |
-| `cudaMallocTensor` | `Dims -> CudaT m (Tensor CudaDevPtr a)` |
+| `cudaMallocArray` | `Dims -> CudaT m (Array CudaDevPtr a)` |
 | `cudaMemcpyToDev` | `(Storable a) => Ptr a -> CudaDevPtr a -> CudaT m ()` |
 | `cudaMemcpyToDevBytes` | `CSize -> Ptr a -> CudaDevPtr a -> CudaT m ()` |
 | `cudaMemcpyToDevVector` | `Vector a -> CudaDevPtr a -> CudaT m ()` |
-| `cudaMemcpyToDevTensor` | `Tensor Vector a -> CudaDevPtr a -> CudaT m ()` |
+| `cudaMemcpyToDevArray` | `Array Vector a -> CudaDevPtr a -> CudaT m ()` |
 | `cudaMemcpyFromDev` | `(Storable a) => CudaDevPtr a -> Ptr a -> CudaT m ()` |
 | `cudaMemcpyFromDevBytes` | `CSize -> CudaDevPtr a -> Ptr a -> CudaT m ()` |
 | `cudaFree` | `CudaDevPtr a -> CudaT m ()` |

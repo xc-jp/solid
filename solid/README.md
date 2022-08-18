@@ -1,17 +1,17 @@
 # `solid`
 
-A library for specifying Tensors, their Shapes and their contained Element types.
+A library for specifying Arrays, their Shapes and their contained Element types.
 
 ## Modules
 
 `Data.Solid.Array` exposes most of what one would need.
 
-In the most general case, `Tensor v a` is `v a` with dimensions, as is defined in `Data.Solid.Common`:
+In the most general case, `Array v a` is `v a` with dimensions, as is defined in `Data.Solid.Common`:
 
 ```haskell
-data Tensor v a = Tensor
-  { tensorDims :: !Dims,
-    tensorData :: !(v a)
+data Array v a = Array
+  { arrayDims :: !Dims,
+    arrayData :: !(v a)
   }
 ```
 

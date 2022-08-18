@@ -6,11 +6,11 @@
 {-# LANGUAGE UndecidableInstances #-}
 
 module Data.Solid.Array
-  ( -- * Tensor Types
-    Tensor (..),
-    STensor,
-    VTensor,
-    UTensor,
+  ( -- * Array Types
+    Array (..),
+    SArray,
+    VArray,
+    UArray,
     Unbox,
     Storable,
 
@@ -26,11 +26,11 @@ module Data.Solid.Array
     hmapDynamic,
     fhdynamic,
     htraverseDynamic,
-    DSTensor,
-    DUTensor,
-    DVTensor,
-    dtensorDims,
-    dtensorElt,
+    DSArray,
+    DUArray,
+    DVArray,
+    darrayDims,
+    darrayElt,
 
     -- * Scalar
     Scalar,
@@ -75,11 +75,11 @@ deriving instance (Show (f Float), Show (f Int32)) => Show (Dynamic f)
 
 instance (NFData (f Float), NFData (f Int32)) => NFData (Dynamic f)
 
-dtensorDims :: Dynamic (Tensor f) -> Dims
-dtensorDims = hdynamic tensorDims
+darrayDims :: Dynamic (Array f) -> Dims
+darrayDims = hdynamic arrayDims
 
-dtensorElt :: Dynamic (Tensor f) -> Elt
-dtensorElt = dynToElt
+darrayElt :: Dynamic (Array f) -> Elt
+darrayElt = dynToElt
 
 -- | Destructor for 'Dynamic'
 {-# INLINE dynamic #-}
@@ -129,11 +129,11 @@ htraverseDynamic ::
 htraverseDynamic f (DFloat v) = DFloat <$> f v
 htraverseDynamic f (DInt v) = DInt <$> f v
 
-type DSTensor = Dynamic STensor
+type DSArray = Dynamic SArray
 
-type DUTensor = Dynamic UTensor
+type DUArray = Dynamic UArray
 
-type DVTensor = Dynamic VTensor
+type DVArray = Dynamic VArray
 
 data Elt = EltFloat | EltInt
   deriving (Eq, Show, Generic)
