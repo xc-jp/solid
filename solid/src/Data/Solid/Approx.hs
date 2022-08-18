@@ -5,8 +5,8 @@ module Data.Solid.Approx
   ( AApprox,
     AApproxElt,
     DSAApprox,
-    tapprox,
-    tapproxElt,
+    aapprox,
+    aapproxElt,
     dapprox,
     dapproxElt,
   )
@@ -36,11 +36,11 @@ newtype AApproxElt v e = AApproxElt (Array v e)
 
 type DSAApprox = Dynamic (AApprox VS.Vector)
 
-tapprox :: Array f a -> AApprox f a
-tapprox = AApprox
+aapprox :: Array f a -> AApprox f a
+aapprox = AApprox
 
-tapproxElt :: Array f a -> AApproxElt f a
-tapproxElt = AApproxElt
+aapproxElt :: Array f a -> AApproxElt f a
+aapproxElt = AApproxElt
 
 dapprox :: Dynamic (Array f) -> Dynamic (AApprox f)
 dapprox = bimapDynamic AApprox AApprox
