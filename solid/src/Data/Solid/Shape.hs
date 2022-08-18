@@ -1,6 +1,6 @@
 {-# LANGUAGE DeriveGeneric #-}
 
-module Data.Shape
+module Data.Solid.Shape
   ( Dims,
     Shape (..),
     dimsSize,
@@ -15,9 +15,10 @@ module Data.Shape
   )
 where
 
-import Data.Positive
-import Data.Text.Prettyprint.Doc
+import Data.Bifunctor (Bifunctor (first))
+import Data.Solid.Positive
 import GHC.Generics (Generic)
+import Prettyprinter
 
 type Dims = [Positive]
 
@@ -120,6 +121,6 @@ unifyDims Z [] = pure ([], [])
 unifyDims Z _ = Left $ unwords ["Too many dimensions"]
 unifyDims (_ :. _) [] = Left $ unwords ["Too few dimensions"]
 unifyDims (x :. xs) (y : ys)
-  | x == y = fmap (\(as, bs) -> (x : as, bs)) (unifyDims xs ys)
+  | x == y = fmap (first (x :)) (unifyDims xs ys)
   | otherwise = Left $ unwords ["Dimensions", show x, "and", show y, "do not match"]
 unifyDims Any {} ys = pure ([], ys)

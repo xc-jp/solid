@@ -1,0 +1,13 @@
+cradle:
+  cabal:
+    - path: "solid/src"
+      component: "lib:solid"
+
+    - path: "solid/test/tasty"
+      component: "solid:test:tasty"
+
+    - path: "solid-cuda/solid-cuda/src"
+      component: "lib:solid-cuda"
+
+    - path: "solid-cuda/solid-cuda/test/tasty"
+      component: "solid-cuda:test:tasty"

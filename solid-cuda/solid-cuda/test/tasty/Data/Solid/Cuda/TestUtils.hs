@@ -1,25 +1,25 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE LambdaCase #-}
 
-module Tensor.Cuda.TestUtils
+module Data.Solid.Cuda.TestUtils
   ( testCudaTWith,
     propertyCudaT,
     eqCudaT,
-    tensorEqCudaT,
+    arrayEqCudaT,
     expectAnyExceptionCudaT,
     expectExceptionCudaT,
     DimsSized (..),
-    STensorSized (..),
+    SArraySized (..),
   )
 where
 
 import Control.Monad
-import Data.Shape
+import Data.Solid.Approx
+import Data.Solid.Array
+import Data.Solid.Cuda
+import Data.Solid.Shape
 import qualified Data.Vector.Generic as VG
 import qualified Data.Vector.Storable as V
-import Tensor
-import Tensor.Approx
-import Tensor.Cuda
 import Test.QuickCheck
 import Test.QuickCheck.Monadic
 
@@ -37,12 +37,12 @@ propertyCudaT = testCudaTWith $ \case
 eqCudaT :: (Eq a, Show a) => a -> CudaT IO a -> Property
 eqCudaT expected = propertyCudaT . fmap (expected ===)
 
-tensorEqCudaT ::
-  (VG.Vector f a, Eq (TApproxElt f a), Show (f a)) =>
-  Tensor f a ->
-  CudaT IO (Tensor f a) ->
+arrayEqCudaT ::
+  (VG.Vector f a, Eq (AApproxElt f a), Show (f a)) =>
+  Array f a ->
+  CudaT IO (Array f a) ->
   Property
-tensorEqCudaT expected actual =
+arrayEqCudaT expected actual =
   tapproxElt expected `eqCudaT` (tapproxElt <$> actual)
 
 expectAnyExceptionCudaT :: CudaT IO a -> Property
@@ -74,11 +74,11 @@ instance Arbitrary DimsSized where
     ds <- replicateM nIndices $ choose (1, max 1 n)
     pure . DimsSized . (fromIntegral <$>) $ ds
 
-newtype STensorSized a = STensorSized (STensor a)
+newtype SArraySized a = SArraySized (SArray a)
   deriving (Eq, Show)
 
-instance (Storable a, Arbitrary a) => Arbitrary (STensorSized a) where
+instance (Storable a, Arbitrary a) => Arbitrary (SArraySized a) where
   arbitrary = do
     DimsSized dims <- resize 10 arbitrary
     imgs <- vector $ dimsSize dims
-    pure . STensorSized . Tensor dims $ V.fromList imgs
+    pure . SArraySized . Array dims $ V.fromList imgs

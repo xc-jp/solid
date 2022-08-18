@@ -5,12 +5,12 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE UndecidableInstances #-}
 
-module Array
-  ( -- * Tensor Types
-    Tensor (..),
-    STensor,
-    VTensor,
-    UTensor,
+module Data.Solid.Array
+  ( -- * Array Types
+    Array (..),
+    SArray,
+    VArray,
+    UArray,
     Unbox,
     Storable,
 
@@ -26,11 +26,11 @@ module Array
     hmapDynamic,
     fhdynamic,
     htraverseDynamic,
-    DSTensor,
-    DUTensor,
-    DVTensor,
-    dtensorDims,
-    dtensorElt,
+    DSArray,
+    DUArray,
+    DVArray,
+    darrayDims,
+    darrayElt,
 
     -- * Scalar
     Scalar,
@@ -57,14 +57,14 @@ where
 import Control.DeepSeq (NFData)
 import Data.Functor.Identity
 import Data.Int (Int32)
-import Data.Positive
 import Data.Proxy
-import Data.Shape as Sh
+import Data.Solid.Common as TC
+import Data.Solid.Positive
+import Data.Solid.Shape as Sh
+import Data.Solid.Vector as TV
 import Data.Vector.Storable (Storable)
 import Data.Vector.Unboxed (Unbox)
 import GHC.Generics
-import Tensor.Common as TC
-import Tensor.Vector as TV
 
 data Dynamic f = DFloat !(f Float) | DInt !(f Int32)
   deriving (Generic)
@@ -75,11 +75,11 @@ deriving instance (Show (f Float), Show (f Int32)) => Show (Dynamic f)
 
 instance (NFData (f Float), NFData (f Int32)) => NFData (Dynamic f)
 
-dtensorDims :: Dynamic (Tensor f) -> Dims
-dtensorDims = hdynamic tensorDims
+darrayDims :: Dynamic (Array f) -> Dims
+darrayDims = hdynamic arrayDims
 
-dtensorElt :: Dynamic (Tensor f) -> Elt
-dtensorElt = dynToElt
+darrayElt :: Dynamic (Array f) -> Elt
+darrayElt = dynToElt
 
 -- | Destructor for 'Dynamic'
 {-# INLINE dynamic #-}
@@ -129,11 +129,11 @@ htraverseDynamic ::
 htraverseDynamic f (DFloat v) = DFloat <$> f v
 htraverseDynamic f (DInt v) = DInt <$> f v
 
-type DSTensor = Dynamic STensor
+type DSArray = Dynamic SArray
 
-type DUTensor = Dynamic UTensor
+type DUArray = Dynamic UArray
 
-type DVTensor = Dynamic VTensor
+type DVArray = Dynamic VArray
 
 data Elt = EltFloat | EltInt
   deriving (Eq, Show, Generic)

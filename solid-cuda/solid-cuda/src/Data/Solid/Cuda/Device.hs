@@ -1,19 +1,19 @@
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE TemplateHaskell #-}
 
-module Tensor.Cuda.Device
+module Data.Solid.Cuda.Device
   ( -- * pointer
     getDeviceCuda,
     deviceSynchronize,
   )
 where
 
+import Data.Solid.Cuda.Internal
+import Data.Solid.Cuda.Memory (withPtr_)
 import qualified Language.C.Inline as C
-import Tensor.Cuda.Internal
-import Tensor.Cuda.Memory (withPtr_)
 
 C.context C.baseCtx
-C.include "<tensor-cuda.h>"
+C.include "<solid-cuda.h>"
 
 getDeviceCuda :: MonadCuda m => m Int
 getDeviceCuda = fmap fromIntegral $
