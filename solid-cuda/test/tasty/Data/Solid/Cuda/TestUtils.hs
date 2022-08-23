@@ -43,7 +43,7 @@ arrayEqCudaT ::
   CudaT IO (Array f a) ->
   Property
 arrayEqCudaT expected actual =
-  tapproxElt expected `eqCudaT` (tapproxElt <$> actual)
+  aapproxElt expected `eqCudaT` (aapproxElt <$> actual)
 
 expectAnyExceptionCudaT :: CudaT IO a -> Property
 expectAnyExceptionCudaT = testCudaTWith $ \case

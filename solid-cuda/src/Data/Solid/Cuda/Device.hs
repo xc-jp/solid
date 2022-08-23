@@ -13,13 +13,14 @@ import Data.Solid.Cuda.Memory (withPtr_)
 import qualified Language.C.Inline as C
 
 C.context C.baseCtx
-C.include "<solid-cuda.h>"
+C.include "<cuda.h>"
+C.include "<cuda_runtime.h>"
 
 getDeviceCuda :: MonadCuda m => m Int
 getDeviceCuda = fmap fromIntegral $
   withPtr_ $ \ptr ->
-    callCuda [C.exp| int { getDevice($(int *ptr)) } |]
+    callCuda [C.exp| int { cudaGetDevice($(int *ptr)) } |]
 
 deviceSynchronize :: MonadCuda m => m ()
 deviceSynchronize =
-  callCuda [C.exp| int { deviceSynchronize() } |]
+  callCuda [C.exp| int { cudaDeviceSynchronize() } |]
