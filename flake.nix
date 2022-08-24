@@ -25,7 +25,11 @@
         };
         pkgs = import nixpkgs {
           inherit system;
-          config.allowUnfree = true;
+          config = {
+            allowUnfreePredicate = pkg: builtins.elem (nixpkgs.lib.getName pkg) [
+              "cudatoolkit"
+            ];
+          };
           overlays = [
             overlay
           ];
