@@ -17,9 +17,9 @@
           hsPkgs = final.haskell.packages.ghc8107.extend (hfinal: hprev: {
             nonlinear = hfinal.callCabal2nix "nonlinear" nonlinear-src { };
             solid = hfinal.callCabal2nix "solid" ./solid { };
-            solid-cuda = final.callCabal2nix "solid-cuda" ./solid-cuda/solid-cuda { };
+            solid-cuda = hfinal.callCabal2nix "solid-cuda" ./solid-cuda { };
           });
-          cudatoolkit = (final.callPackage
+          cudart = (final.callPackage
             "${nixpkgs}/pkgs/development/compilers/cudatoolkit"
             { }).cudatoolkit_11_2;
         };
@@ -41,9 +41,16 @@
             pkgs.hsPkgs.haskell-language-server
             pkgs.cabal-install
             pkgs.hsPkgs.cabal-fmt
-            pkgs.cudatoolkit
+            pkgs.cudart
           ];
         };
+
+        packages = {
+          solid = pkgs.hsPkgs.solid;
+          solid-cuda = pkgs.hsPkgs.solid-cuda;
+        };
+
+        defaultPackage = pkgs.hsPkgs.solid;
       }
     );
 }
