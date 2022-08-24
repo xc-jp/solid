@@ -19,11 +19,9 @@
             solid = hfinal.callCabal2nix "solid" ./solid { };
             solid-cuda = final.callCabal2nix "solid-cuda" ./solid-cuda/solid-cuda { };
           });
-          solid-cuda = final.callPackage ./solid-cuda/libsolid-cuda { }; # alias
           cudatoolkit = (final.callPackage
             "${nixpkgs}/pkgs/development/compilers/cudatoolkit"
             { }).cudatoolkit_11_2;
-          cudart = pkgs.cudatoolkit.lib;
         };
         pkgs = import nixpkgs {
           inherit system;
@@ -43,12 +41,8 @@
             pkgs.hsPkgs.haskell-language-server
             pkgs.cabal-install
             pkgs.hsPkgs.cabal-fmt
-            pkgs.solid-cuda
+            pkgs.cudatoolkit
           ];
-          LD_LIBRARY_PATH = nixpkgs.lib.makeLibraryPath (
-            [ pkgs.solid-cuda ]
-          );
-          # librarySystemDepends = [ pkgs.solid-cuda ];
         };
       }
     );

@@ -63,7 +63,9 @@ import Foreign.Storable (peek, sizeOf)
 import qualified Language.C.Inline as C
 
 C.context C.baseCtx
-C.include "<solid-cuda.h>"
+C.include "<stddef.h>"
+C.include "<cuda.h>"
+C.include "<cuda_runtime.h>"
 
 newtype CudaDevPtr a = CudaDevPtr {getCudaPtr :: Ptr a}
 
@@ -142,7 +144,7 @@ cudaMalloc = cudaMallocBytes $ csizeOf (undefined :: a)
 cudaMallocBytes :: MonadCuda m => CSize -> m (CudaDevPtr a)
 cudaMallocBytes bytes = do
   cpa <- withPtr_ $ \pcpa ->
-    callCuda [C.exp| int { devMalloc($(size_t bytes), $(void **pcpa)) } |]
+    callCuda [C.exp| int { cudaMalloc($(void **pcpa), $(size_t bytes)) } |]
   when (cpa == nullPtr) $
     throwErrorCuda AllocationFailed
   pure . CudaDevPtr $ castPtr cpa
@@ -158,13 +160,16 @@ cudaMemcpyToDev = cudaMemcpyToDevBytes $ csizeOf (undefined :: a)
 
 cudaMemcpyToDevBytes :: MonadCuda m => CSize -> Ptr a -> CudaDevPtr a -> m ()
 cudaMemcpyToDevBytes bytes srcp (CudaDevPtr dstp) =
-  callCuda [C.exp| int { memcpyToDev($(size_t bytes), $(void *devDst), $(void *hostSrc)) } |]
+  callCuda [C.exp| int { cudaMemcpy($(void *devDst), $(void *hostSrc), $(size_t bytes), cudaMemcpyHostToDevice) } |]
   where
     hostSrc = castPtr srcp
     devDst = castPtr dstp
 
 cudaMemcpyToDevVector :: forall a m. (Storable a, MonadCuda m) => Vector a -> CudaDevPtr a -> m ()
-cudaMemcpyToDevVector v = cudaMemcpyToDevBytes (fromIntegral $ V.length v * sizeOf (undefined :: a)) (unsafeForeignPtrToPtr $ fst $ V.unsafeToForeignPtr0 v)
+cudaMemcpyToDevVector v =
+  cudaMemcpyToDevBytes
+    (fromIntegral $ V.length v * sizeOf (undefined :: a))
+    (unsafeForeignPtrToPtr $ fst $ V.unsafeToForeignPtr0 v)
 
 cudaMemcpyToDevArray :: (Storable a, MonadCuda m) => Array Vector a -> CudaDevPtr a -> m ()
 cudaMemcpyToDevArray t = cudaMemcpyToDevVector (arrayData t)
@@ -174,13 +179,13 @@ cudaMemcpyFromDev = cudaMemcpyFromDevBytes $ csizeOf (undefined :: a)
 
 cudaMemcpyFromDevBytes :: MonadCuda m => CSize -> CudaDevPtr a -> Ptr a -> m ()
 cudaMemcpyFromDevBytes bytes (CudaDevPtr srcp) dstp =
-  callCuda [C.exp| int { memcpyFromDev($(size_t bytes), $(void *hostDst), $(void *devSrc)) }|]
+  callCuda [C.exp| int { cudaMemcpy($(void *hostDst), $(void *devSrc), $(size_t bytes), cudaMemcpyDeviceToHost) }|]
   where
     devSrc = castPtr srcp
     hostDst = castPtr dstp
 
 cudaFree :: MonadCuda m => CudaDevPtr a -> m ()
-cudaFree (CudaDevPtr pa) = callCuda [C.exp| int { devFree($(void *p)) }|]
+cudaFree (CudaDevPtr pa) = callCuda [C.exp| int { cudaFree($(void *p)) }|]
   where
     p = castPtr pa
 
