@@ -1,7 +1,7 @@
 module Data.Solid.ProtoTest (tests) where
 
 import Data.Solid.Vector
-import Test.Tasty.Hspec
+import Test.Hspec (Spec, describe, it, shouldBe)
 
 tests :: Spec
 tests =
