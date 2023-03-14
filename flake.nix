@@ -3,33 +3,31 @@
 
   inputs.nixpkgs.url = "github:NixOS/nixpkgs";
   inputs.flake-utils.url = "github:numtide/flake-utils";
+  inputs.nonlinear-src = {
+    url = "github:xc-jp/nonlinear";
+    flake = false;
+  };
 
-  outputs = { self, nixpkgs, flake-utils }:
+  outputs = { self, nixpkgs, flake-utils, nonlinear-src }:
     flake-utils.lib.eachDefaultSystem (system:
       let
-        nonlinear-src = pkgs.fetchFromGitHub {
-          owner = "xc-jp";
-          repo = "nonlinear";
-          rev = "5be5da6375209e75ddb46a3e5e9e315a9841c573";
-          sha256 = "sha256-4yt+gJQcJ7YTVoqkjlTk8NDwLpqw8Fj95ICmRWMqyFE=";
-        };
         overlay = final: prev: {
           hsPkgs = final.haskell.packages.ghc8107.extend (hfinal: hprev: {
             nonlinear = hfinal.callCabal2nix "nonlinear" nonlinear-src { };
             solid = hfinal.callCabal2nix "solid" ./solid { };
             solid-cuda = final.callCabal2nix "solid-cuda" ./solid-cuda/solid-cuda { };
           });
-          cudatoolkit = (final.callPackage
-            "${nixpkgs}/pkgs/development/compilers/cudatoolkit"
-            { }).cudatoolkit_11_2;
         };
         pkgs = import nixpkgs {
           inherit system;
           config.allowUnfree = true;
+          config.cudaSupport = true;
           overlays = [
             overlay
           ];
         };
+        inherit (pkgs.cudaPackages) cudatoolkit;
+        inherit (pkgs.linuxPackages) nvidia_x11;
       in
       {
         devShell = pkgs.hsPkgs.shellFor {
@@ -41,8 +39,14 @@
             pkgs.hsPkgs.haskell-language-server
             pkgs.cabal-install
             pkgs.hsPkgs.cabal-fmt
-            pkgs.cudatoolkit
-          ];
+            nvidia_x11
+            cudatoolkit
+            ];
+          shellHook = ''
+            export LD_LIBRARY_PATH=${pkgs.lib.makeLibraryPath [cudatoolkit nvidia_x11]}
+            echo "cudatoolkit ${cudatoolkit.version}"
+            echo "nvidia_x11 ${nvidia_x11.version}"
+          '';
         };
       }
     );

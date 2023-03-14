@@ -52,6 +52,7 @@ test-suite tasty
     , solid
     , tasty
     , tasty-hspec
+    , hspec
 
   main-is:          Main.hs
   default-language: Haskell2010

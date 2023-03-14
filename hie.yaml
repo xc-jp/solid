@@ -9,5 +9,5 @@ cradle:
     - path: "solid-cuda/src"
       component: "lib:solid-cuda"
 
-    - path: "solid-cuda/solid-cuda/test/tasty"
+    - path: "solid-cuda/test/tasty"
       component: "solid-cuda:test:tasty"
